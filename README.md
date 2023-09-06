@@ -1,4 +1,4 @@
-# Brain Network Specialization through the Development and Use of NSAR 2023
+# Brain Network Specialization through NSAR 2023
 
 ## Purpose
 
