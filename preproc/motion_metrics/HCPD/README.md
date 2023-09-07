@@ -1,4 +1,4 @@
-# Motion Metrics Scripts for the HCP Dataset
+# Motion Metrics Scripts for the HCPD Dataset
 ## Description
 
 Scripts used to compute mean framewise displacement, mean DVARS, and volumes remaining following CBIG2016 preprocessing. Scripts are optimized for Python/3.6.
