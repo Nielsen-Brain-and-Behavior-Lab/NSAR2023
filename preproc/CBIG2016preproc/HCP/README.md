@@ -4,7 +4,7 @@
 The following scripts were used to implement the single-echo fMRI preprocessing pipeline (Note: Actual pipeline code is available at the CBIG GitHub repo: https://github.com/ThomasYeoLab/CBIG/tree/master/stable_projects/preprocessing/CBIG_fMRI_Preproc2016).
 
 ## Contents
-1. ids.txt List of anonymized subject IDs.
+1. 4SESS_IDS.txt and HCP_replication_set_230608.txt Lists of anonymized subject IDs.
 2. example_config.txt Sets the preprocessing steps and desired order.
 3. get_individual_subjects.sh Necessary to generate text file with paths for each subjects' mutli-echo runs
 4. preproc_wrap.sh Wrapper script to run the preprocessing pipeline. Tied to preproc_job.sh and submits one job per subject.
