@@ -6,3 +6,6 @@ These scripts were used to calculate left and right hemisphere surface areas for
 ## Contents
 !. subjids.txt Text file containing anonymized subject IDs.
 2. gii2network_sa.sh Calculates surface area using gifti individual parcellation files.
+
+## Additional Notes
+The script to create the fsaverage6 Conte69 midthickness file is in the HCP folder.
