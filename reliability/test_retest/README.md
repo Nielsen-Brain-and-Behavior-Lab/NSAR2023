@@ -11,4 +11,4 @@ Using HCP participants with all four runs available following preprocessing (N=2
    * HungarianMatching_RETEST.m
      
 2. Network surface area scripts
-  gii2network_SA*.sh
+   * gii2network_SA*.sh
