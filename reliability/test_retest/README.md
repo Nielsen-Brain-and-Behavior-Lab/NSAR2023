@@ -7,6 +7,6 @@ Using HCP participants with all four runs available following preprocessing (N=2
 1. Kong2019 MS-HBM parcellation scripts
    Generate_data*.sh
    parc_step_*.m
-   HungarianMatching*.m
+   HungarianMatching_RETEST.m
 2. Network surface area scripts
   gii2network_SA*.sh
