@@ -5,7 +5,6 @@ In the case that a large quantity of data is needed to derive a reliable estimat
 
 ## Contents
 1. Example network parcellation scripts
-
 * Generate_data_step*.sh
 * parc_step_*.m
 * HungarianMatching.m
@@ -13,7 +12,6 @@ In the case that a large quantity of data is needed to derive a reliable estimat
 * CBIG_preproc_tested_config_funconn.sh
 
 2. Example network surface area script
-
 * EVEN_gii2network_sa.sh
  
 3. Example dice coefficient script
