@@ -5,6 +5,7 @@
 
 ## Contents
 1. Generate single FC matrices:
+   subjids.txt Text file of anonymized subject IDs for the 232 HCP subjects
    Generate_FC_text_HCP_ALL.sh Used to generate text files with paths to preprocessed surface-projected output
    FC_matrix_wrapper.sh Wrapper script to submit jobs for each run for each subject
    FC_matrix_job.sh Job script for generating FC matrices for each run
