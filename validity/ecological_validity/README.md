@@ -13,3 +13,4 @@ For this analysis, we compared the LanA language atlas against the language netw
 5. parc_2_annot_group.m Convert group parcellation from .mat to annotation file
 6. convert_annot2gii_group.sh Convert annotation file to GIFTI format
 7. ids.txt The anonymized subject IDs in the HCP 232 dataset
+8. 17Network_Reference_FS6_Labels_220808.mat Hungarian matching reference file (Yeo 2011 17N in fsaverage6 resolution)
