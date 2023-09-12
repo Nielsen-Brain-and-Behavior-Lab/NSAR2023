@@ -1,6 +1,7 @@
 # Functional Connectivity Matrices (HCP dataset)
 
 ## Description
+After preprocessing, a functional connectivity matrix was generated for each run within each participant. These matrices were then averaged within each participant. Following the generation of average FC matrices, the autonomy index could be calculated.
 
 
 ## Contents
