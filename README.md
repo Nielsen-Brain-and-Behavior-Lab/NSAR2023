@@ -4,7 +4,7 @@
 The aim of this study was to estimate network specialization using a network surface area-based approach (NSAR). After examining the validity and reliability of individual network parcellations and this surface area-based measure of specialization, we addressed two hypotheses. First, we hypothesized that networks associated with language, visuospatial attention, and executive control would show the greatest specialization. Second, we hypothesized that network specialization relationships would follow one of three hypotheses: covariation, compensation, or independence. 
 
 ## Associated Publications 
-<Coming Soon!>
+Preprint: https://doi.org/10.1101/2023.12.08.570817
 
 ## Getting Started 
 Scripts are organized in the following folders: preproc, ind_parc, network_sa, validity, reliability, and stats.
