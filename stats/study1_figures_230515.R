@@ -23,6 +23,8 @@ library(gghalves) #raincloud plots
 #library(mvnTest) #Doornik-Hansen test for multivariate normality
 #library(car) #VIF test for multicollinearity. Masks 'recode' function.
 #library(lavaan) #CFA
+library(CCA) #Canonical correlation analysis
+library(CCP) #Canonical correlation analysis dimensions
 #-----------------------------------ALL DEMOS---------------------------------
 #Load ALL .csv
 study1 <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/csv_files/study1_HCP_AI_entirety_230630.csv")
@@ -968,8 +970,52 @@ study1_demos <- subset(study1, NewNetwork=="1")
       )
     }
     
-        
-#-------------------------------------HCP LANG LAT---------------------------------
+#-----------------------------------------LAN-A-----------------------------
+  #SUMMARY: Using python/3.6, LanA values were summed within the HCP 232 group parcellation network boundaries.
+    
+  #SETUP: 
+    LANA <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Analysis/Study1_Dissertation/HCP_analysis/LanA_atlas/sum/HCP_LanA_sum_231003.csv")
+  
+    #Drop Network 0 (medial wall)
+    LANA <- subset(LANA, NETWORK!=0)
+    
+    #Reorder CBIG Networks
+    mapping <- c("1" = 12, "2" = 6, "3" = 3, "4" = 13, "5" = 5, "6" = 1, "7" = 8, "8" = 7, "9" = 10, "10" = 11, "11" = 15, "12" = 14, "13" = 4, "14" = 2, "15" = 17, "16" = 16, "17" = 9)
+    LANA$NewNetwork <- recode(LANA$NETWORK, !!!mapping)
+    
+  #BARPLOT    
+    CBIG_Palette <- c("#602368", "#DC1F26", "#4582A7", "#21B88B", "#32489E", "#4A9644", "#106A36", "#833C98", "#E383B1", "#CC8229", "#7B2C3F", "#6F809A", "#E3E218", "#A9313D", "#1C1B55", "#40471D", "#BCCF7E")
+    LANA$NewNetwork <- as.factor(as.character(LANA$NewNetwork))
+    network_order <- c('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17')
+    LANA$NewNetwork <- factor(LANA$NewNetwork, level = network_order)
+    ggplot(LANA, aes(x = NewNetwork, y = Sum, fill=NewNetwork)) +
+      geom_bar(stat = "identity") +
+      labs(x = "", y = "LanA Sum")+
+      scale_fill_manual(values = CBIG_Palette) + 
+      scale_x_discrete(labels=c("VIS-A", "VIS-B", "SOM-A", "SOM-B", "LANG", "DAN-A", "DAN-B", "SAL-A", "SAL-B", "CTRL-A", "CTRL-B", "CTRL-C", "DEF-A", "DEF-B", "DEF-C", "LIM-A", "LIM-B"))+
+    theme_bw() +
+      theme(
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.title = element_text(hjust = 0.5, vjust = -0.1),
+        axis.title = element_text(colour = "black", size = 12),
+        axis.text.y = element_text(colour = "black", angle = 90, hjust = 0.6),
+        axis.text.x = element_text(colour = "black", angle = 35, vjust = 0.9, hjust = .8),
+        legend.position = "none",
+        legend.title = element_blank(),
+        legend.text = element_text(colour = "black", size = 10),
+        legend.background = element_rect(fill = "white", size = 0.5),
+        axis.line = element_line(colour = "black", size = 1, linetype = "solid"),
+        axis.ticks = element_line(colour = "black", size = 1, linetype = "solid"),
+        panel.border = element_blank(),
+        panel.background = element_blank()
+      )
+    
+    
+    
+    
+    
+#-------------------------------------HCP LANG LAT ZSTAT---------------------------------
     #Load SAI, zstat data
     ZSTAT <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Analysis/Study1_Dissertation/HCP_analysis/lang_lat/zstats/MSHBM_LONG_AVG_ZSTAT_HCP_230318.csv")
     SAI <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Analysis/Study1_Dissertation/HCP_analysis/network_sa/ALL/HCP_ALL_NETWORK_SA_SUB_NET_LH_RH_230221.csv")
@@ -1003,14 +1049,14 @@ study1_demos <- subset(study1, NewNetwork=="1")
 #Plot: ZSTAT avg within LH and RH for network 5 x SAI for language network (5)
     #With Spearman coefficient
     ggplot(LANG, aes(x=ZAI, y=SA_LAT))+
-      labs(x = "Language Task Laterality", y = 'Language Network SAI')+
+      labs(x = "Language Task Laterality", y = 'Language NSAR')+
       labs(fill = " ")+
       labs(color = " ")+
       geom_point(fill="#E69F00", pch=21)+
       geom_smooth(color="black", method = "lm", size=.75, se = FALSE)+ 
       stat_cor(method="spearman")+
       scale_y_continuous(limits = c(-.50, .95))+
-      scale_x_continuous(limits = c(-5, 5))+
+      scale_x_continuous(limits = c(-1, 1))+
       theme_bw()+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
       theme(axis.title = element_text(colour = "black", size=12), axis.text.y =element_text(colour = "black", angle = 90, hjust = 0.6), 
@@ -1024,7 +1070,7 @@ study1_demos <- subset(study1, NewNetwork=="1")
 #Plot: Network-avg ZSTAT x SAI for language network (5)
     #With Spearman coefficient
     ggplot(LANG, aes(x=Network_AVG_Z, y=SA_LAT))+
-      labs(x = "Language Task Mean Z-Score", y = 'Language Network SAI')+
+      labs(x = "Language Task Mean Z-Score", y = 'Language NSAR')+
       labs(fill = " ")+
       labs(color = " ")+
       geom_point(fill="#E69F00", pch=21)+
@@ -1044,7 +1090,7 @@ study1_demos <- subset(study1, NewNetwork=="1")
 #Plot: LH_AVG ZSTAT x SAI for language network (5)
     #With Spearman coefficient
     ggplot(LANG, aes(x=LH_AVG_Z, y=SA_LAT))+
-      labs(x = "Language Task LH Mean Z-Score", y = 'Language Network SAI')+
+      labs(x = "Language Task LH Mean Z-Score", y = 'Language NSAR')+
       labs(fill = " ")+
       labs(color = " ")+
       geom_point(fill="#E69F00", pch=21)+
@@ -1061,7 +1107,58 @@ study1_demos <- subset(study1, NewNetwork=="1")
     ggsave(filename = paste("Study1_HCP_LangLat_LHAvg_Zstat_SAI_230516.svg"), width = 3.35, height = 3.35,
            path = "C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/svg_figures/", dpi = 300)
 
+
+#-------------------------------------HCP LANG LAT TSTAT---------------------------------
+#Analysis: 231002, using LanA to mask, then thresholded at top 10% of vertices
+
+#SETUP    
+    #Load SAI, tstat data
+    TSTAT <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Analysis/Study1_Dissertation/HCP_analysis/lang_lat/lana_mask/HCP_langlat_lanamask_230929.csv")
+    SAI <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Analysis/Study1_Dissertation/HCP_analysis/network_sa/ALL/HCP_ALL_NETWORK_SA_SUB_NET_LH_RH_230221.csv")
     
+    #Format data
+    SAI$SUBJID <- gsub("^.{0,4}", "", SAI$SUBJID)
+    SAI$Network <- gsub("^.{0,8}", "", SAI$NETWORK)
+    
+    #Only include NSAR network 5
+    SAI <- subset(SAI, Network==5)
+
+    #Create SAI variable (NSAR)
+    SAI$SA_LAT <- (SAI$RH_SA - SAI$LH_SA) / (SAI$LH_SA + SAI$RH_SA)
+    
+    #Create TSTAT asymmetry index variable
+    TSTAT$TLAT <- (TSTAT$RH_VERT - TSTAT$LH_VERT) / (TSTAT$RH_VERT + TSTAT$LH_VERT)
+    
+    #Merge TSTAT and SAI datasets
+    LANG <- merge(SAI, TSTAT, by =c("SUBJID"), all=FALSE)
+    
+    
+#Stat: Spearman rank correlation
+    cor.test(LANG$TLAT, LANG$SA_LAT, method = 'spearman')
+    
+#Plot: Lang task laterality x NSAR for language network (5)
+    #With Spearman coefficient
+    ggplot(LANG, aes(x=TLAT, y=SA_LAT))+
+      labs(x = "Language Task Laterality", y = 'Language NSAR')+
+      labs(fill = " ")+
+      labs(color = " ")+
+      geom_point(fill="#E69F00", pch=21)+
+      geom_smooth(color="black", method = "lm", size=.75, se = FALSE)+ 
+      #stat_cor(method="spearman")+
+      #scale_y_continuous(limits = c(-.50, .95))+
+      theme_bw()+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+      theme(axis.title = element_text(colour = "black", size=11), axis.text.y =element_text(colour = "black", angle = 90, hjust = 0.6, size=10), 
+            axis.text.x =element_text(colour = "black", size=10), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+            legend.position = "none", legend.title=element_text(colour = "black", size = 12), legend.text=element_text(colour = "black", size = 12), 
+            legend.background = element_rect(fill="white", size=0.5) , axis.line = element_line(colour = "black", size = 1, linetype = "solid"), 
+            axis.ticks = element_line(colour = "black", size =1, linetype ="solid"), panel.border = element_blank(), panel.background = element_blank())
+    ggsave(filename = paste("Study1_HCP_LangLat_LanAMask_Tstat_NSAR_231002.svg"), width = 3.35, height = 3.35,
+           path = "C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/svg_figures/", dpi = 300)
+    
+    
+    
+        
 #---------------------------------HCP STABLE EST.: OVERALL PARC------------------------------------------
 #SETUP
     #Load files: 1_dice
@@ -3169,7 +3266,7 @@ study1_demos <- subset(study1, NewNetwork=="1")
 
 #Fig. 9: 8 networks percent SA LH and RH in separate panels, together, also NSAR adjusted       
       #Subset to 8 networks
-      network_order <- c('6', '15', '5', '11', '8', '2', '12', '17')
+      network_order <- c('17', '12' ,'2', '8', '11', '5', '15', '6')
       study1_8 <- study1[study1$NewNetwork %in% network_order, ]
       # create % surface area per hemisphere (total SA: 126300.7)
       study1_8$LH_SA_PERCENT <- (study1_8$LH_SA/63103.74)*100
@@ -3177,7 +3274,7 @@ study1_demos <- subset(study1, NewNetwork=="1")
       
       #Fig. 9A: LH SA Percent With X-axis MSHBM Labels. Boxplots
       # specify the order of the networks
-      network_order <- c('6', '15', '5', '11', '8', '2', '12', '17')
+      network_order <- c('17', '12' ,'2', '8', '11', '5', '15', '6')
       # use factor() to set the order of the factor levels
       study1_8$NewNetwork <- factor(study1_8$NewNetwork, level = network_order)
       GroupPalette <- c("#E69F00","#D55E00","#0072B2")
@@ -3188,7 +3285,7 @@ study1_demos <- subset(study1, NewNetwork=="1")
         scale_y_continuous(expand=c(0,0))+
         labs(y = '% LH Surface Area', x = "") +
         #geom_hline(yintercept = 0, linetype = "dotted", color = "black") +
-        scale_x_discrete(labels=c("DAN-A", "DEF-C", "LANG", "CTRL-B", "SAL-A", "VIS-B", "CTRL-C", "LIM-B")) +
+        scale_x_discrete(labels=c("LIM-B", "CTRL-C", "VIS-B", "SAL-A", "CTRL-B", "LANG", "DEF-C", "DAN-A"))+
         scale_colour_manual(values = GroupPalette) +
         scale_fill_manual(values = GroupPalette) + 
         theme(
@@ -3205,7 +3302,7 @@ study1_demos <- subset(study1, NewNetwork=="1")
       
       #Fig. 9B: RH SA Percent With X-axis MSHBM Labels. Boxplots
       # specify the order of the networks
-      network_order <- c('6', '15', '5', '11', '8', '2', '12', '17')
+      network_order <- c('17', '12' ,'2', '8', '11', '5', '15', '6')
       # use factor() to set the order of the factor levels
       study1_8$NewNetwork <- factor(study1_8$NewNetwork, level = network_order)
       GroupPalette <- c("#E69F00","#D55E00","#0072B2")
@@ -3216,7 +3313,7 @@ study1_demos <- subset(study1, NewNetwork=="1")
         scale_y_continuous(expand=c(0,0))+
         labs(y = '% RH Surface Area', x = "") +
         #geom_hline(yintercept = 0, linetype = "dotted", color = "black") +
-        scale_x_discrete(labels=c("DAN-A", "DEF-C", "LANG", "CTRL-B", "SAL-A", "VIS-B", "CTRL-C", "LIM-B")) +
+        scale_x_discrete(labels=c("LIM-B", "CTRL-C", "VIS-B", "SAL-A", "CTRL-B", "LANG", "DEF-C", "DAN-A"))+
         scale_colour_manual(values = GroupPalette) +
         scale_fill_manual(values = GroupPalette) + 
         theme(
@@ -3292,12 +3389,12 @@ study1_demos <- subset(study1, NewNetwork=="1")
      
     #USING STD ERR BARS   
       # specify the order of the networks
-      network_order <- c('6', '15', '5', '11', '8', '2', '12', '17')
+      network_order <- c('17', '12' ,'2', '8', '11', '5', '15', '6')
       # use factor() to set the order of the factor levels
       study1_8$NewNetwork <- factor(study1_8$NewNetwork, level = network_order)
       GroupPalette <- c("#0072B2","#D55E00","#E69F00")
       #Order networks numerically
-      network_order <- c('6', '15', '5', '11', '8', '2', '12', '17')
+      network_order <- c('17', '12' ,'2', '8', '11', '5', '15', '6')
       # use factor() to set the order of the factor levels
       SA_df$NewNetwork <- factor(SA_df$NewNetwork, level = network_order)
       #Order groups manually
@@ -3305,13 +3402,13 @@ study1_demos <- subset(study1, NewNetwork=="1")
       SA_df$data_hemi <- factor(SA_df$data_hemi, levels=group_order)
       GroupPalette <- c("#E69F00","#FFDF97","#D55E00", "#FFB075", "#0072B2", "#9BDBFF")
       ggplot(SA_df, aes(x = NewNetwork, y = MEAN_PERCENT, group=interaction(data_hemi, NewNetwork), fill = data_hemi)) +
-        geom_bar(stat = "identity", position=position_dodge(width = .8)) +
-        geom_errorbar(aes(ymin=MEAN_PERCENT-SE_PERCENT, ymax = MEAN_PERCENT+SE_PERCENT), width = .5,  position = position_dodge(width = .8), color="black", size=.5) +
+        geom_bar(stat = "identity", position=position_dodge(width = .9)) +
+        geom_errorbar(aes(ymin=MEAN_PERCENT-SE_PERCENT, ymax = MEAN_PERCENT+SE_PERCENT), width = .5,  position = position_dodge(width = .9), color="black", size=.5) +
         labs(x = "", y = "Mean % Surface Area") +
         scale_colour_manual(values = GroupPalette) +
         scale_fill_manual(values = GroupPalette) + 
         scale_y_continuous(expand=c(0,0), limits=c(0,11.0))+
-        scale_x_discrete(labels=c("DAN-A", "DEF-C", "LANG", "CTRL-B", "SAL-A", "VIS-B", "CTRL-C", "LIM-B")) +
+        scale_x_discrete(labels=c("LIM-B", "CTRL-C", "VIS-B", "SAL-A", "CTRL-B", "LANG", "DEF-C", "DAN-A"))+
         #theme_bw()
         theme(
           axis.text = element_text(size = 10),
@@ -3327,44 +3424,44 @@ study1_demos <- subset(study1, NewNetwork=="1")
       
     #USING PERCENTILES for bars  
       # specify the order of the networks
-      network_order <- c('6', '15', '5', '11', '8', '2', '12', '17')
+      #network_order <- c('17', '12' ,'2', '8', '11', '5', '15', '6')
       # use factor() to set the order of the factor levels
-      study1_8$NewNetwork <- factor(study1_8$NewNetwork, level = network_order)
-      GroupPalette <- c("#0072B2","#D55E00","#E69F00")
+      #study1_8$NewNetwork <- factor(study1_8$NewNetwork, level = network_order)
+      #GroupPalette <- c("#0072B2","#D55E00","#E69F00")
       #Order networks numerically
-      network_order <- c('6', '15', '5', '11', '8', '2', '12', '17')
+      #network_order <- c('17', '12' ,'2', '8', '11', '5', '`5', '6')
       # use factor() to set the order of the factor levels
-      SA_df$NewNetwork <- factor(SA_df$NewNetwork, level = network_order)
+      #SA_df$NewNetwork <- factor(SA_df$NewNetwork, level = network_order)
       #Order groups manually
-      group_order <- c('HCP-DISCLH_PERCENT', "HCP-DISCRH_PERCENT", "HCP-REPLH_PERCENT", "HCP-REPRH_PERCENT", "HCPDLH_PERCENT", "HCPDRH_PERCENT")
-      SA_df$data_hemi <- factor(SA_df$data_hemi, levels=group_order)
-      GroupPalette <- c("#E69F00","#FFDF97","#D55E00", "#FFB075", "#0072B2", "#9BDBFF")
-      ggplot(SA_df, aes(x = NewNetwork, y = MEAN_PERCENT, group=interaction(data_hemi, NewNetwork), fill = data_hemi)) +
-        geom_bar(stat = "identity", position=position_dodge(width = .8)) +
-        geom_errorbar(aes(ymin=`2.5`, ymax = `97.5`), width = .5,  position = position_dodge(width = .8), color="black", size=.5) +
-        labs(x = "", y = "Mean % Surface Area") +
-        scale_colour_manual(values = GroupPalette) +
-        scale_fill_manual(values = GroupPalette) + 
-        scale_y_continuous(expand=c(0,0), limits=c(0,14.4))+
-        scale_x_discrete(labels=c("DAN-A", "DEF-C", "LANG", "CTRL-B", "SAL-A", "VIS-B", "CTRL-C", "LIM-B")) +
-        #theme_bw()
-        theme(
-          axis.text = element_text(size = 10),
-          axis.title = element_text(size = 10),
-          legend.position = "none",
-          axis.text.y = element_text(colour = "black", angle = 90, hjust = 0.6),
-          axis.text.x = element_text(colour = "black", hjust = .5, vjust=1, angle = 0),
-          panel.background = element_blank(),
-          axis.line = element_line(colour = "black", size = 1, linetype = "solid")
-        )
-      ggsave(filename = paste("Study1_HCP_HCPD_UT_LHRH_SA_Percent_8N_Boxplots_PERCENTILE_230714.png"), width = 6.9, height = 2.35,
-             path = "C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/png_figures/", dpi = 300)
+      #group_order <- c('HCP-DISCLH_PERCENT', "HCP-DISCRH_PERCENT", "HCP-REPLH_PERCENT", "HCP-REPRH_PERCENT", "HCPDLH_PERCENT", "HCPDRH_PERCENT")
+      #SA_df$data_hemi <- factor(SA_df$data_hemi, levels=group_order)
+      #GroupPalette <- c("#E69F00","#FFDF97","#D55E00", "#FFB075", "#0072B2", "#9BDBFF")
+      #ggplot(SA_df, aes(x = NewNetwork, y = MEAN_PERCENT, group=interaction(data_hemi, NewNetwork), fill = data_hemi)) +
+      #  geom_bar(stat = "identity", position=position_dodge(width = .8)) +
+      #  geom_errorbar(aes(ymin=`2.5`, ymax = `97.5`), width = .5,  position = position_dodge(width = .8), color="black", size=.5) +
+      #  labs(x = "", y = "Mean % Surface Area") +
+      #  scale_colour_manual(values = GroupPalette) +
+      #  scale_fill_manual(values = GroupPalette) + 
+      #  scale_y_continuous(expand=c(0,0), limits=c(0,14.4))+
+      #  scale_x_discrete(labels=c("LIM-B", "CTRL-C", "VIS-B", "SAL-A", "CTRL-B", "LANG", "DEF-C", "DAN-A"))+
+      #  #theme_bw()
+      #  theme(
+      #    axis.text = element_text(size = 10),
+      #    axis.title = element_text(size = 10),
+      #    legend.position = "none",
+      #    axis.text.y = element_text(colour = "black", angle = 90, hjust = 0.6),
+      #    axis.text.x = element_text(colour = "black", hjust = .5, vjust=1, angle = 0),
+      #    panel.background = element_blank(),
+      #    axis.line = element_line(colour = "black", size = 1, linetype = "solid")
+      #  )
+      #ggsave(filename = paste("Study1_HCP_HCPD_UT_LHRH_SA_Percent_8N_Boxplots_PERCENTILE_230714.png"), width = 6.9, height = 2.35,
+      #       path = "C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/png_figures/", dpi = 300)
       
       
       
       #Fig. 9D: Adjusted NSAR values.
       # specify the order of the networks
-      network_order <- c('6', '15', '5', '11', '8', '2', '12', '17')
+      network_order <- c('17', '12' ,'2', '8', '11', '5', '15', '6')
       # use factor() to set the order of the factor levels
       study1_8$NewNetwork <- factor(study1_8$NewNetwork, level = network_order)
       GroupPalette <- c("#E69F00","#D55E00","#0072B2")
@@ -3375,7 +3472,7 @@ study1_demos <- subset(study1, NewNetwork=="1")
         labs(x = "", y = "Adjusted NSAR Value") +
         scale_colour_manual(values = GroupPalette) +
         scale_fill_manual(values = GroupPalette) + 
-        scale_x_discrete(labels=c("DAN-A", "DEF-C", "LANG", "CTRL-B", "SAL-A", "VIS-B", "CTRL-C", "LIM-B")) +
+        scale_x_discrete(labels=c("LIM-B", "CTRL-C", "VIS-B", "SAL-A", "CTRL-B", "LANG", "DEF-C", "DAN-A"))+
         #theme_bw()
         theme(
           axis.text = element_text(size = 10),
@@ -3705,13 +3802,106 @@ study1_demos <- subset(study1, NewNetwork=="1")
   
 #Reshape dataframe to WIDE
     study1_wide  <- reshape(study1, idvar = "SUBJID", timevar = "NewNetwork", direction = "wide")
-                
+
+#At a most general level, is there a relationship between left- and right-lateralized networks?
+    #HCP-DISC
+      HCPDISC <- subset(study1_wide, dataset.1=="HCP-DISC")
+      HCPDISC$LH_AVG_LAT <- rowMeans(HCPDISC[, c("SA_LAT_ADJ.5", "SA_LAT_ADJ.6", "SA_LAT_ADJ.15")], na.rm = TRUE)
+      HCPDISC$RH_AVG_LAT <- rowMeans(HCPDISC[, c("SA_LAT_ADJ.2", "SA_LAT_ADJ.8", "SA_LAT_ADJ.11", "SA_LAT_ADJ.12", "SA_LAT_ADJ.17")], na.rm = TRUE)
+      cor.test(HCPDISC$LH_AVG_LAT, HCPDISC$RH_AVG_LAT)
+    #HCP-REP
+      HCPREP <- subset(study1_wide, dataset.1=="HCP-REP")
+      HCPREP$LH_AVG_LAT <- rowMeans(HCPREP[, c("SA_LAT_ADJ.5", "SA_LAT_ADJ.6", "SA_LAT_ADJ.15")], na.rm = TRUE)
+      HCPREP$RH_AVG_LAT <- rowMeans(HCPREP[, c("SA_LAT_ADJ.2", "SA_LAT_ADJ.8", "SA_LAT_ADJ.11", "SA_LAT_ADJ.12", "SA_LAT_ADJ.17")], na.rm = TRUE)
+      cor.test(HCPREP$LH_AVG_LAT, HCPREP$RH_AVG_LAT)
+    #HCPD
+      HCPD <- subset(study1_wide, dataset.1=="HCPD")
+      HCPD$LH_AVG_LAT <- rowMeans(HCPD[, c("SA_LAT_ADJ.5", "SA_LAT_ADJ.6", "SA_LAT_ADJ.15")], na.rm = TRUE)
+      HCPD$RH_AVG_LAT <- rowMeans(HCPD[, c("SA_LAT_ADJ.2", "SA_LAT_ADJ.8", "SA_LAT_ADJ.11", "SA_LAT_ADJ.12", "SA_LAT_ADJ.17")], na.rm = TRUE)
+      cor.test(HCPD$LH_AVG_LAT, HCPD$RH_AVG_LAT)
+      
+      
+#Correlation values to report
+    #HCP-DISC
+    HCPDISC <- subset(study1_wide, dataset.1=="HCP-DISC")
+    comp1 <- cor.test(HCPDISC$SA_LAT_ADJ.17, HCPDISC$SA_LAT_ADJ.6, method="pearson")
+    comp2 <- cor.test(HCPDISC$SA_LAT_ADJ.17, HCPDISC$SA_LAT_ADJ.15, method="pearson")   
+    comp3 <- cor.test(HCPDISC$SA_LAT_ADJ.15, HCPDISC$SA_LAT_ADJ.2, method="pearson")
+    comp4 <- cor.test(HCPDISC$SA_LAT_ADJ.15, HCPDISC$SA_LAT_ADJ.11, method = "pearson")
+    comp5 <- cor.test(HCPDISC$SA_LAT_ADJ.15, HCPDISC$SA_LAT_ADJ.12, method="pearson")
+    comp6 <- cor.test(HCPDISC$SA_LAT_ADJ.11, HCPDISC$SA_LAT_ADJ.5, method="pearson")
+    comp7 <- cor.test(HCPDISC$SA_LAT_ADJ.5, HCPDISC$SA_LAT_ADJ.8, method="pearson")
+    comp8 <- cor.test(HCPDISC$SA_LAT_ADJ.6, HCPDISC$SA_LAT_ADJ.5, method="pearson")
+    
+#Linear models to report in correlation scatterplots figure caption
+    #HCP-DISC
+      HCPDISC <- subset(study1_wide, dataset.1=="HCP-DISC")
+    
+      comp1 <- cor.test(HCPDISC$SA_LAT_ADJ.17, HCPDISC$SA_LAT_ADJ.6, method="pearson")
+      lm1 <- lm(SA_LAT_ADJ.17~SA_LAT_ADJ.6, data=HCPDISC)
+      summary(lm1)
+      
+      comp2 <- cor.test(HCPDISC$SA_LAT_ADJ.17, HCPDISC$SA_LAT_ADJ.15, method = "pearson")
+      lm2 <- lm(SA_LAT_ADJ.17~SA_LAT_ADJ.15, data=HCPDISC)
+      summary(lm2)
+    
+      comp3 <- cor.test(HCPDISC$SA_LAT_ADJ.6, HCPDISC$SA_LAT_ADJ.5, method = "pearson")
+      lm3 <- lm(SA_LAT_ADJ.6~SA_LAT_ADJ.5, data=HCPDISC)
+      summary(lm3)
+    
+      comp4 <- cor.test(HCPDISC$SA_LAT_ADJ.8, HCPDISC$SA_LAT_ADJ.5, method = "pearson")
+      lm4 <- lm(SA_LAT_ADJ.8~SA_LAT_ADJ.5, data=HCPDISC)
+      summary(lm4)
+      
+    #HCP-REP
+      HCPREP <- subset(study1_wide, dataset.1=="HCP-REP")
+      
+      comp1 <- cor.test(HCPREP$SA_LAT_ADJ.17, HCPREP$SA_LAT_ADJ.6, method="pearson")
+      lm1 <- lm(SA_LAT_ADJ.17~SA_LAT_ADJ.6, data=HCPREP)
+      summary(lm1)
+      
+      comp2 <- cor.test(HCPREP$SA_LAT_ADJ.17, HCPREP$SA_LAT_ADJ.15, method = "pearson")
+      lm2 <- lm(SA_LAT_ADJ.17~SA_LAT_ADJ.15, data=HCPREP)
+      summary(lm2)
+      
+      comp3 <- cor.test(HCPREP$SA_LAT_ADJ.6, HCPREP$SA_LAT_ADJ.5, method = "pearson")
+      lm3 <- lm(SA_LAT_ADJ.6~SA_LAT_ADJ.5, data=HCPREP)
+      summary(lm3)
+      
+      comp4 <- cor.test(HCPREP$SA_LAT_ADJ.8, HCPREP$SA_LAT_ADJ.5, method = "pearson")
+      lm4 <- lm(SA_LAT_ADJ.8~SA_LAT_ADJ.5, data=HCPREP)
+      summary(lm4)
+      
+    #HCPD
+      HCPD <- subset(study1_wide, dataset.1=="HCPD")
+      
+      comp1 <- cor.test(HCPD$SA_LAT_ADJ.17, HCPD$SA_LAT_ADJ.6, method="pearson")
+      lm1 <- lm(SA_LAT_ADJ.17~SA_LAT_ADJ.6, data=HCPD)
+      summary(lm1)
+      
+      comp2 <- cor.test(HCPD$SA_LAT_ADJ.17, HCPD$SA_LAT_ADJ.15, method = "pearson")
+      lm2 <- lm(SA_LAT_ADJ.17~SA_LAT_ADJ.15, data=HCPD)
+      summary(lm2)
+      
+      comp3 <- cor.test(HCPD$SA_LAT_ADJ.6, HCPD$SA_LAT_ADJ.5, method = "pearson")
+      lm3 <- lm(SA_LAT_ADJ.6~SA_LAT_ADJ.5, data=HCPD)
+      summary(lm3)
+      
+      comp4 <- cor.test(HCPD$SA_LAT_ADJ.8, HCPD$SA_LAT_ADJ.5, method = "pearson")
+      lm4 <- lm(SA_LAT_ADJ.8~SA_LAT_ADJ.5, data=HCPD)
+      summary(lm4)
+    
 #HCP-DISC CORRELATION MATRIX
             HCPDISC_wide <- subset(study1_wide, dataset.1=="HCP-DISC")
-                selected_vars <- HCPDISC_wide[, c("SA_LAT_ADJ.2", "SA_LAT_ADJ.5", 
-                                              "SA_LAT_ADJ.6", "SA_LAT_ADJ.8",
-                                              "SA_LAT_ADJ.11", "SA_LAT_ADJ.12",
-                                              "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")]
+                #selected_vars <- HCPDISC_wide[, c("SA_LAT_ADJ.2", "SA_LAT_ADJ.5", 
+                #                              "SA_LAT_ADJ.6", "SA_LAT_ADJ.8",
+                #                              "SA_LAT_ADJ.11", "SA_LAT_ADJ.12",
+                #                              "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")]
+                
+                selected_vars <- HCPDISC_wide[, c("SA_LAT_ADJ.17", "SA_LAT_ADJ.12", 
+                                                  "SA_LAT_ADJ.2", "SA_LAT_ADJ.8",
+                                                  "SA_LAT_ADJ.11", "SA_LAT_ADJ.5",
+                                                  "SA_LAT_ADJ.15", "SA_LAT_ADJ.6")]
                 
                 # Compute the correlation matrix
                 cor_matrix <- cor(selected_vars)
@@ -3764,8 +3954,10 @@ study1_demos <- subset(study1, NewNetwork=="1")
                   scale_fill_gradient(low = "#E69F00", high = "white", na.value="white", breaks=color_breaks, labels=round(color_breaks,2), limits=c(-.6, round(max_value_excluding_1,2))) +
                   geom_text(aes(Variable1, Variable2, label = ifelse(abs(round(Correlation,2)) < r_value & Triangle!="LowerTriangle", "", round(Correlation, 2))), color = "black", size = 1.75) +
                   geom_text(aes(label = ifelse(is.na(Correlation), "1", "")), color = "black", size = 1.75) +
-                  scale_x_discrete(labels=c("VIS-B","LANG", "DAN-A","SAL-A", "CTRL-B", "CTRL-C", "DEF-C", "LIM-B")) +
-                  scale_y_discrete(labels=c("VIS-B","LANG", "DAN-A","SAL-A", "CTRL-B", "CTRL-C", "DEF-C", "LIM-B")) +
+                  #scale_x_discrete(labels=c("VIS-B","LANG", "DAN-A","SAL-A", "CTRL-B", "CTRL-C", "DEF-C", "LIM-B")) +
+                  #scale_y_discrete(labels=c("VIS-B","LANG", "DAN-A","SAL-A", "CTRL-B", "CTRL-C", "DEF-C", "LIM-B")) +
+                  scale_x_discrete(labels=c("LIM-B", "CTRL-C", "VIS-B", "SAL-A", "CTRL-B", "LANG", "DEF-C", "DAN-A")) +
+                  scale_y_discrete(labels=c("LIM-B", "CTRL-C", "VIS-B", "SAL-A", "CTRL-B", "LANG", "DEF-C", "DAN-A")) +
                   xlab("") +
                   ylab("") +
                   labs(fill = "")+
@@ -3786,10 +3978,10 @@ study1_demos <- subset(study1, NewNetwork=="1")
                 
 #HCP-REP CORRELATION MATRIX
                 HCPREP_wide <- subset(study1_wide, dataset.1=="HCP-REP")
-                selected_vars <- HCPREP_wide[, c("SA_LAT_ADJ.2", "SA_LAT_ADJ.5", 
-                                                  "SA_LAT_ADJ.6", "SA_LAT_ADJ.8",
-                                                  "SA_LAT_ADJ.11", "SA_LAT_ADJ.12",
-                                                  "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")]
+                selected_vars <- HCPREP_wide[, c("SA_LAT_ADJ.17", "SA_LAT_ADJ.12", 
+                                                  "SA_LAT_ADJ.2", "SA_LAT_ADJ.8",
+                                                  "SA_LAT_ADJ.11", "SA_LAT_ADJ.5",
+                                                  "SA_LAT_ADJ.15", "SA_LAT_ADJ.6")]
                 
                 # Compute the correlation matrix
                 cor_matrix <- cor(selected_vars)
@@ -3843,8 +4035,8 @@ study1_demos <- subset(study1, NewNetwork=="1")
                   scale_fill_gradient(low = "#D55E00", high = "white", na.value="white", breaks=color_breaks, labels=round(color_breaks,2), limits=c(-.6, round(max_value_excluding_1,2))) +
                   geom_text(aes(Variable1, Variable2, label = ifelse(abs(round(Correlation,2)) < r_value & Triangle!="LowerTriangle", "", round(Correlation, 2))), color = "black", size = 1.75) +
                   geom_text(aes(label = ifelse(is.na(Correlation), "1", "")), color = "black", size = 1.75) +
-                  scale_x_discrete(labels=c("VIS-B","LANG", "DAN-A","SAL-A", "CTRL-B", "CTRL-C", "DEF-C", "LIM-B")) +
-                  scale_y_discrete(labels=c("VIS-B","LANG", "DAN-A","SAL-A", "CTRL-B", "CTRL-C", "DEF-C", "LIM-B")) +
+                  scale_x_discrete(labels=c("LIM-B", "CTRL-C", "VIS-B", "SAL-A", "CTRL-B", "LANG", "DEF-C", "DAN-A")) +
+                  scale_y_discrete(labels=c("LIM-B", "CTRL-C", "VIS-B", "SAL-A", "CTRL-B", "LANG", "DEF-C", "DAN-A")) +
                   xlab("") +
                   ylab("") +
                   labs(fill = "")+
@@ -3867,10 +4059,10 @@ study1_demos <- subset(study1, NewNetwork=="1")
                 
 #HCPD CORRELATION MATRIX
                 HCPD_wide <- subset(study1_wide, dataset.1=="HCPD")
-                selected_vars <- HCPD_wide[, c("SA_LAT_ADJ.2", "SA_LAT_ADJ.5", 
-                                                 "SA_LAT_ADJ.6", "SA_LAT_ADJ.8",
-                                                 "SA_LAT_ADJ.11", "SA_LAT_ADJ.12",
-                                                 "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")]
+                selected_vars <- HCPD_wide[, c("SA_LAT_ADJ.17", "SA_LAT_ADJ.12", 
+                                                 "SA_LAT_ADJ.2", "SA_LAT_ADJ.8",
+                                                 "SA_LAT_ADJ.11", "SA_LAT_ADJ.5",
+                                                 "SA_LAT_ADJ.15", "SA_LAT_ADJ.6")]
                 
                 # Compute the correlation matrix
                 cor_matrix <- cor(selected_vars)
@@ -3925,8 +4117,8 @@ study1_demos <- subset(study1, NewNetwork=="1")
                   scale_fill_gradient(low = "#0072B2", high = "white", na.value="white", breaks=color_breaks, labels=round(color_breaks,2), limits=c(-.6, round(max_value_excluding_1,2))) +
                   geom_text(aes(Variable1, Variable2, label = ifelse(abs(round(Correlation,2)) < r_value & Triangle!="LowerTriangle", "", round(Correlation, 2))), color = "black", size = 1.75) +
                   geom_text(aes(label = ifelse(is.na(Correlation), "1", "")), color = "black", size = 1.75) +
-                  scale_x_discrete(labels=c("VIS-B","LANG", "DAN-A","SAL-A", "CTRL-B", "CTRL-C", "DEF-C", "LIM-B")) +
-                  scale_y_discrete(labels=c("VIS-B","LANG", "DAN-A","SAL-A", "CTRL-B", "CTRL-C", "DEF-C", "LIM-B")) +
+                  scale_x_discrete(labels=c("LIM-B", "CTRL-C", "VIS-B", "SAL-A", "CTRL-B", "LANG", "DEF-C", "DAN-A")) +
+                  scale_y_discrete(labels=c("LIM-B", "CTRL-C", "VIS-B", "SAL-A", "CTRL-B", "LANG", "DEF-C", "DAN-A")) +
                   xlab("") +
                   ylab("") +
                   labs(fill = "")+
@@ -4035,6 +4227,99 @@ study1_demos <- subset(study1, NewNetwork=="1")
                   ggsave(filename = filename, width = 3.35, height = 3.35,
                          path = "C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/png_figures/", dpi = 300)
                 }         
+                
+                
+              #LANG vs. CTRL-B
+                comp_networks=c("11")
+                network_names=c("Control-B")
+                Group_Palette <- c("#E69F00", "#D55E00", "#0072B2",  "#009E73", "#C9FFE1")
+                
+                study1_wide$SUBJID <- as.factor(study1_wide$SUBJID)
+                count=0
+                for (n in comp_networks) {
+                  count=count+1
+                  filename <- paste("Study1_CorrPlots_LANGvs_", "Network", n, "_231202.png", sep = "")
+                  x_title <- paste(network_names[count], " NSAR", sep="")
+                  x_var <- paste("SA_LAT_ADJ.", n, sep = "")
+                  plot_title <- paste(network_names[count])
+                  
+                  ggplot(study1_wide, aes(x = get(x_var), y = SA_LAT_ADJ.5, color=dataset.1)) +
+                    labs(x = x_title, y = "Language NSAR") +
+                    #ggtitle(plot_title)+
+                    labs(fill = " ", color = " ") +
+                    geom_point(aes(fill = dataset.1),colour="black", pch = 21) +
+                    #geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red", size = 1) +
+                    geom_smooth(method = "lm", aes(fill=dataset.1), size = 0.75, se = FALSE) +
+                    #scale_y_continuous(limits = c(-.5, 1.03)) +
+                    #scale_x_continuous(limits = c(-1, .5)) +
+                    #stat_cor(method="spearman", color="black")+
+                    scale_color_manual(values = Group_Palette) +
+                    scale_fill_manual(values = Group_Palette) +
+                    theme_bw() +
+                    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                          axis.title = element_text(colour = "black", size = 12),
+                          axis.text.y = element_text(colour = "black", angle = 90, hjust = 0.6),
+                          axis.text.x = element_text(colour = "black"),
+                          legend.position = "none",
+                          legend.title = element_text(colour = "black", size = 12),
+                          legend.text = element_text(colour = "black", size = 12),
+                          legend.background = element_rect(fill = "white", size = 0.5),
+                          axis.line = element_line(colour = "black", size = 1, linetype = "solid"),
+                          axis.ticks = element_line(colour = "black", size = 1, linetype = "solid"),
+                          panel.border = element_blank(),
+                          panel.background = element_blank())
+                  
+                  ggsave(filename = filename, width = 3.35, height = 3.35,
+                         path = "C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/png_figures/", dpi = 300)
+                }         
+                
+                
+                
+                #LANG vs. SAL-A
+                comp_networks=c("8")
+                network_names=c("Salience/VenAttn-A")
+                Group_Palette <- c("#E69F00", "#D55E00", "#0072B2",  "#009E73", "#C9FFE1")
+                
+                study1_wide$SUBJID <- as.factor(study1_wide$SUBJID)
+                count=0
+                for (n in comp_networks) {
+                  count=count+1
+                  filename <- paste("Study1_CorrPlots_LANGvs_", "Network", n, "_231202.png", sep = "")
+                  x_title <- paste(network_names[count], " NSAR", sep="")
+                  x_var <- paste("SA_LAT_ADJ.", n, sep = "")
+                  plot_title <- paste(network_names[count])
+                  
+                  ggplot(study1_wide, aes(x = get(x_var), y = SA_LAT_ADJ.5, color=dataset.1)) +
+                    labs(x = x_title, y = "Language NSAR") +
+                    #ggtitle(plot_title)+
+                    labs(fill = " ", color = " ") +
+                    geom_point(aes(fill = dataset.1),colour="black", pch = 21) +
+                    #geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red", size = 1) +
+                    geom_smooth(method = "lm", aes(fill=dataset.1), size = 0.75, se = FALSE) +
+                    #scale_y_continuous(limits = c(-.5, 1.03)) +
+                    #scale_x_continuous(limits = c(-1, .5)) +
+                    #stat_cor(method="spearman", color="black")+
+                    scale_color_manual(values = Group_Palette) +
+                    scale_fill_manual(values = Group_Palette) +
+                    theme_bw() +
+                    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                          axis.title = element_text(colour = "black", size = 12),
+                          axis.text.y = element_text(colour = "black", angle = 90, hjust = 0.6),
+                          axis.text.x = element_text(colour = "black"),
+                          legend.position = "none",
+                          legend.title = element_text(colour = "black", size = 12),
+                          legend.text = element_text(colour = "black", size = 12),
+                          legend.background = element_rect(fill = "white", size = 0.5),
+                          axis.line = element_line(colour = "black", size = 1, linetype = "solid"),
+                          axis.ticks = element_line(colour = "black", size = 1, linetype = "solid"),
+                          panel.border = element_blank(),
+                          panel.background = element_blank())
+                  
+                  ggsave(filename = filename, width = 3.35, height = 3.35,
+                         path = "C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/png_figures/", dpi = 300)
+                }         
+                
+                
                 
                 
                 
@@ -4267,10 +4552,6 @@ study1_demos <- subset(study1, NewNetwork=="1")
         HCP_SA$SUBJID <- gsub("^.{0,4}", "", HCP_SA$SUBJID)
         HCP_SA$Network <- gsub("^.{0,8}", "", HCP_SA$NETWORK)
         
-        #Flip sign of AI
-        HCP_AI$RH_AVG_AI <- -(HCP_AI$RH_AVG_AI)
-        HCP_AI$LH_AVG_AI <- -(HCP_AI$LH_AVG_AI)
-        
         #Drop Network 0 (medial wall)
         HCP_AI <- subset(HCP_AI, Network!=0)
         HCP_SA <- subset(HCP_SA, Network!=0)
@@ -4323,7 +4604,58 @@ study1_demos <- subset(study1, NewNetwork=="1")
           
           
 #FIGURES: Scatterplots comparing NSAR with AI for 6 networks          
-       #Left-lateralized: Networks 5, 6, 11
+    #Just LANGUAGE
+          left_networks=c("5")
+          r_ordered <- c(LANG_COR[["estimate"]], DANA_COR[["estimate"]], CTRLB_COR[["estimate"]])
+          network_names=c("LANG", "DAN-A", "CTRL-B")
+          CBIG_Palette <- c("#602368", "#DC1F26", "#4582A7", "#21B88B", "#32489E", "#4A9644", "#106A36", "#833C98", "#E383B1", "#CC8229", "#7B2C3F", "#6F809A", "#E3E218", "#A9313D", "#1C1B55", "#40471D", "#BCCF7E")
+          HCP_wide$SUBJID <- as.factor(HCP_wide$SUBJID)
+          count=0
+          for (n in left_networks) {
+            count=count+1
+            #convert AI to %
+            filename <- paste("Study1_HCP_ECO_AI_SpearCorrPlots_", "Network", n, "_230527.png", sep = "")
+            y_title <- paste("Autonomy Index (%)")
+            x_title <- paste("Language NSAR")
+            y_column <- paste("LH_AVG_AI.", n, sep = "")
+            x_var <- paste("SA_LAT.", n, sep = "")
+            #plot_title <- paste(network_names[count], " rho: ", format(round(r_ordered[count], 2), nsmall = 2), sep="")
+            
+            ggplot(HCP_wide, aes(x = get(x_var), y = get(y_column), color = dataset.1)) +
+              labs(x = x_title, y = y_title) +
+              #ggtitle(plot_title)+
+              labs(fill = " ", color = " ") +
+              geom_point(aes(fill = dataset.1), pch = 21) +
+              #geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red", size = 1) +
+              geom_smooth(color = "black", method = "lm", size = 0.75, se = FALSE) +
+              #scale_y_continuous(limits = c(-0.05, .1)) +
+              #scale_x_continuous(limits = c(-1, 1)) +
+              #stat_cor(method="spearman", color="black")+
+              scale_color_manual(values = "black") +
+              scale_fill_manual(values = CBIG_Palette[as.numeric(n)]) +
+              theme_bw() +
+              theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                    axis.title = element_text(colour = "black", size = 11),
+                    axis.text.y = element_text(colour = "black", angle = 90, hjust = 0.6, size=10),
+                    axis.text.x = element_text(colour = "black", size=10),
+                    legend.position = "none",
+                    plot.title = element_text(hjust = 0.5, vjust = -0.1, size=11),
+                    legend.title = element_text(colour = "black", size = 12),
+                    legend.text = element_text(colour = "black", size = 12),
+                    legend.background = element_rect(fill = "white", size = 0.5),
+                    axis.line = element_line(colour = "black", size = 1, linetype = "solid"),
+                    axis.ticks = element_line(colour = "black", size = 1, linetype = "solid"),
+                    panel.border = element_blank(),
+                    panel.background = element_blank())
+            
+            ggsave(filename = filename, width = 3.35, height = 3.35,
+                   path = "C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/png_figures/", dpi = 300)
+          }
+          
+          
+          
+          
+    #Left-lateralized: Networks 5, 6, 11
           
           left_networks=c("5", "6", "11")
           r_ordered <- c(LANG_COR[["estimate"]], DANA_COR[["estimate"]], CTRLB_COR[["estimate"]])
@@ -4552,7 +4884,7 @@ study1_demos <- subset(study1, NewNetwork=="1")
                 
                 #Initial PFA model hypothesizing three factors. nfactors=max number of factors you would consider
                 result_pca <- fa(cor_matrix, nfactors = 4, rotate = "none")
-                print(result_pca) 
+                print(result_pca, cutoff=0) 
 
                   #Eigenvalues of extracted factors
                   result_pca[["values"]]
@@ -4586,7 +4918,7 @@ study1_demos <- subset(study1, NewNetwork=="1")
                 
                 
                 result_pca <- fa(cor_matrix, nfactors = 2, rotate = "none")
-                print(result_pca) 
+                print(result_pca, cutoff=0) 
                 
                 #Eigenvalues of extracted factors
                 result_pca[["values"]]
@@ -4610,16 +4942,86 @@ study1_demos <- subset(study1, NewNetwork=="1")
                 
                 
 
+#----------------------------------NETWORK RELATIONSHIPS: CFA------------------------------------
+#SETUP
+          #Load ALL .csv
+          study1 <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/csv_files/study1_HCP_AI_entirety_230630.csv")
+          study1$Sex_Bin <- as.factor(study1$Sex_Bin)  
                 
+          #Model-adjusted NSAR for visual inspection (HCP, HCPD)
+          study1$SA_LAT_ADJ <- NA
+          ci_df <- data.frame(dataset=factor(),
+                                    NewNetwork=factor(),
+                                    CI_MIN=integer(),
+                                    CI_MAX=integer(),
+                                    MEAN=integer())
+                
+                dataset_list <- c("HCP-DISC", "HCP-REP", "HCPD")
+                for (d in dataset_list){
+                  subset1 <- subset(study1, dataset==d)
+                  
+                  for (i in 1:17) {
+                    # Subset the data based on NewNetwork value
+                    subset_data <- subset(subset1, NewNetwork == i)
+                    
+                    # Fit the linear regression model
+                    model <- lm(SA_LAT ~ Age_Centered + Sex_Bin + FD_Centered +Handedness, data = subset_data)
+                    
+                    #Grab lm coefficients
+                    BETA_AGE <- model[["coefficients"]][["Age_Centered"]]
+                    BETA_SEX <- model[["coefficients"]][["Sex_Bin1"]]
+                    BETA_FD <- model[["coefficients"]][["FD_Centered"]]
+                    BETA_HAND <- model[["coefficients"]][["Handedness"]]
+                    
+                    #Grab means
+                    MEAN_AGE <- mean(subset_data$Age_Centered)
+                    MEAN_FD <- mean(subset_data$FD_Centered)
+                    MEAN_SEX <- nrow(subset_data[subset_data$Sex_Bin == "0",])/nrow(subset_data) #The mean of a dichotomous variable is just the proportion which has been coded as 0 (or the reference category, which is 0 or Male). Determine ref category with: levels(subset_data$Sex_Bin)[1]
+                    MEAN_HAND <- mean(subset_data$Handedness)
+                    
+                    #IDs of the subset
+                    subsetted_ids <- subset_data$SUBJID
+                    
+                    #Find matching rows
+                    matching_rows <- study1$SUBJID %in% subsetted_ids &
+                      study1$NewNetwork %in% i
+                    
+                    #Example formula (Qurechi 2014): VOLadj = VOLnat - [Beta1(Agenat - MeanAge) + Beta2(Sexnat - MeanSex) + Beta3(Sitenat - MeanSitenat) + Beta4()]
+                    study1$SA_LAT_ADJ[matching_rows] <- subset_data$SA_LAT - ( (BETA_AGE*(subset_data$Age_Centered - MEAN_AGE)) + (BETA_FD*(subset_data$FD_Centered - MEAN_FD)) + (BETA_SEX*(as.numeric(subset_data$Sex_Bin) - MEAN_SEX)) + (BETA_HAND*(subset_data$Handedness - MEAN_HAND)) )
+                    subset_data$SA_LAT_ADJ <- subset_data$SA_LAT - ( (BETA_AGE*(subset_data$Age_Centered - MEAN_AGE)) + (BETA_FD*(subset_data$FD_Centered - MEAN_FD)) + (BETA_SEX*(as.numeric(subset_data$Sex_Bin) - MEAN_SEX)) + (BETA_HAND*(subset_data$Handedness - MEAN_HAND)) )
+                    
+                    #find mean
+                    MEAN <- mean(subset_data$SA_LAT_ADJ)
+                    
+                    n <- length(subset_data$SA_LAT_ADJ)
+                    std_dev <- sd(subset_data$SA_LAT_ADJ)
+                    std_err <- std_dev / sqrt(n)
+                    z_score=1.96
+                    margin_error <- z_score * std_err
+                    
+                    #lower bound
+                    CI_MIN <- MEAN - margin_error
+                    #upper bound
+                    CI_MAX <- MEAN + margin_error
+                    #Append CI data to dataframe
+                    row_df <- data.frame(d, i, CI_MIN, CI_MAX, MEAN)
+                    names(row_df) <- c("dataset", "NewNetwork", "CI_MIN", "CI_MAX", "MEAN")
+                    ci_df <- rbind(ci_df, row_df)
+                  }
+                }
+                
+        #Reshape dataframe to WIDE
+        study1_wide  <- reshape(study1, idvar = "SUBJID", timevar = "NewNetwork", direction = "wide")
+                
+              
 #HCP-REP Assumptions testing
                 #Subset to HCP-REP dataset
                 HCPREP_wide <- subset(study1_wide, dataset.1=="HCP-REP")
                 
                 #1. Pairwise plots
-                HCPREP_SA_wide_pair <- HCPREP_wide[, c("SA_LAT_ADJ.2", "SA_LAT_ADJ.5", 
-                                                         "SA_LAT_ADJ.6", "SA_LAT_ADJ.8",
-                                                         "SA_LAT_ADJ.11", "SA_LAT_ADJ.12",
-                                                         "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")]
+                HCPREP_SA_wide_pair <- HCPREP_wide[, c("SA_LAT_ADJ.5", 
+                                                       "SA_LAT_ADJ.6", 
+                                                       "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")]
                 # Create pairwise scatterplots
                 png("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/png_figures/Study1_HCPREP_PairsPlot_230529.png", height = 1000, width = 1000)
                 pairs(HCPREP_SA_wide_pair)            # Create scatterplots
@@ -4634,16 +5036,15 @@ study1_demos <- subset(study1, NewNetwork=="1")
                 
                 #3. Multicollinearity tests (VIF from package 'car')
                 library(car)
-                vif(lm(SA_LAT_ADJ.2 ~ SA_LAT_ADJ.5 + SA_LAT_ADJ.6 + SA_LAT_ADJ.8 + SA_LAT_ADJ.11 + SA_LAT_ADJ.12 + SA_LAT_ADJ.15 + SA_LAT_ADJ.17, data = HCPREP_SA_wide_pair))
+                vif(lm(SA_LAT_ADJ.5 ~ SA_LAT_ADJ.6 + SA_LAT_ADJ.15 + SA_LAT_ADJ.17, data = HCPREP_SA_wide_pair))
                 
                 
                 #4. Bartlett's test of sphericity (from package 'psych')    
                 #create corr matrix
                 # Select the variables you want to include in the correlation matrix
-                selected_vars <- HCPREP_wide[, c("SA_LAT_ADJ.2", "SA_LAT_ADJ.5", 
-                                                  "SA_LAT_ADJ.6", "SA_LAT_ADJ.8",
-                                                  "SA_LAT_ADJ.11", "SA_LAT_ADJ.12",
-                                                  "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")]
+                selected_vars <- HCPREP_wide[, c("SA_LAT_ADJ.5", 
+                                                 "SA_LAT_ADJ.6", 
+                                                 "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")]
                 
                 # Compute the correlation matrix
                 cor_matrix <- cor(selected_vars)
@@ -4653,89 +5054,54 @@ study1_demos <- subset(study1, NewNetwork=="1")
                 
                 
                 #5. KMO test of sampling adequacy (package 'psych')     
-                KMO(HCPREP_wide[, c("SA_LAT_ADJ.2", "SA_LAT_ADJ.5", "SA_LAT_ADJ.6", "SA_LAT_ADJ.8", "SA_LAT_ADJ.11", "SA_LAT_ADJ.12", "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")])
+                KMO(HCPREP_wide[, c("SA_LAT_ADJ.5", "SA_LAT_ADJ.6", "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")])
                 
-                
-        #HCP Iterated principal factor analysis ('psych' package)
-                #create corr matrix
+
+      #HCP-REP CFA                          
                 # Select the variables you want to include in the correlation matrix
-                selected_vars <- HCPREP_wide[, c("SA_LAT_ADJ.2", "SA_LAT_ADJ.5", 
-                                                  "SA_LAT_ADJ.6", "SA_LAT_ADJ.8",
-                                                  "SA_LAT_ADJ.11", "SA_LAT_ADJ.12",
-                                                  "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")]
+                selected_vars <- HCPREP_wide[, c("SA_LAT_ADJ.5", 
+                                                 "SA_LAT_ADJ.6", 
+                                                 "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")]
                 
                 # Compute the correlation matrix
                 cor_matrix <- cor(selected_vars)     
                 
                 
-                #Initial PFA model hypothesizing three factors. nfactors=max number of factors you would consider
-                result_pca <- fa(cor_matrix, nfactors = 4, rotate = "none")
-                print(result_pca) 
+                #Set up model
+                cfa_model <- "
+                F1 =~ SA_LAT_ADJ.15 + SA_LAT_ADJ.17
+                F2 =~ SA_LAT_ADJ.5 + SA_LAT_ADJ.6
+                F1 ~~ 0*F2"
                 
-                #Eigenvalues of extracted factors
-                result_pca[["values"]]
+                #Fit model
+                library(lavaan)
+                fit_cfa <- cfa(cfa_model, data=selected_vars, estimator = "MLM", se="robust", std.lv=TRUE)
+                summary(fit_cfa, fit.measures =TRUE, standardized=TRUE)
                 
-                #R-squared scores of extracted factors
-                result_pca[["R2.scores"]]
+                #Grab standardized loadings
+                inspect(fit_cfa,what="std")
                 
-                #Factor loadings
-                result_pca[["loadings"]]
-                fa.diagram(result_rotated$loadings, main = "Factor Loadings") #visualization
-                
-                
-                #Parallel analysis  
-                parallel_model <- fa.parallel(cor_matrix, n.obs=277, fa="fa", fm="ml", nfactors=4, n.iter=100)
-                print(parallel_model)
-                
-                #Scree plot
-                png("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/png_figures/Study1_HCPREP_EFAScreePlot_230529.png", height = 3.25, width = 3.25, units="in", res= 1200,)
-                plot(parallel_model,show.legend=FALSE)
+                #visualize model
+                library(semPlot)
+                png("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/png_figures/Study1_HCPREP_CFATree_231206.png", height = 3.25, width = 3.25, units="in", res= 1200,)
+                semPaths(fit_cfa, "std", layout = "tree")
                 dev.off()              # Close device and save as PNG
                 
-      #Final HCPREP EFA model 
-                # Select the variables you want to include in the correlation matrix
-                selected_vars <- HCPREP_wide[, c("SA_LAT_ADJ.2", "SA_LAT_ADJ.5", 
-                                                  "SA_LAT_ADJ.6", "SA_LAT_ADJ.8",
-                                                  "SA_LAT_ADJ.11", "SA_LAT_ADJ.12",
-                                                  "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")]
                 
-                # Compute the correlation matrix
-                cor_matrix <- cor(selected_vars)     
-                
-                result_pca <- fa(cor_matrix, nfactors = 1, rotate = "none")
-                print(result_pca) 
-                
-                #Eigenvalues of extracted factors
-                result_pca[["values"]]
-                
-                #Multiple R-squared scores of extracted factors
-                result_pca[["R2.scores"]]
-                
-                # %variance explained
-                result_pca[["Vaccounted"]]
-                
-                #Factor loadings
-                result_pca[["loadings"]]
-                fa.diagram(result_pca$loadings, main = "Factor Loadings") #visualization
-                
-                #Parallel analysis with scree
-                parallel_model <- fa.parallel(cor_matrix, n.obs=277, fa="fa", fm="ml", nfactors=1, n.iter=100)
-                png("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/png_figures/Study1_HCPDISC_EFAScreePlot_230605.png", height = 3.25, width = 3.25, units="in", res= 1200,)
-                plot(parallel_model,show.legend=FALSE)
-                dev.off()              # Close device and save as PNG
-                
+                #How to write up CFA results: 
+                #i.	This initial structural model provided fair fit to the data χ2(6) = 71.62, p < .001; confirmatory fit index (CFI) = 0.969; root-mean-square error of approximation (RMSEA) = 0.108; standardized root mean square residual (SRMR) = 0.021. However, the modification indices indicated that one change, that of covarying the anomia at 1967 and anomia at 1971 measures, would be beneficial. Since this change would significantly improve the model fit and made theoretical sense, it was implemented. The final structural model (see Figure 1) was of excellent fit to the data χ2(5) = 6.39, p = .27; CFI = 0.999; RMSEA = 0.017; SRMR = 0.011. The results support the idea that SES is impacting alienation in 1967 (β = -0.55, p < 0.001) and in 1971 (β = -0.19, p < 0.001). Also, alienation in 1967 positively predicts alienation in 1971 (β = 0.58, p < 0.001). Standardized estimates for all parameters are shown in Table 3.
+                #ii.	Chi-square:
+                #  iii.	The null hypothesis of the Chi-square test of model fit is that the predicted covariance matrix is equivalent to the actual covariance matrix. Using the goodness-of-fit command in Stata 16.1, we rejected the null hypothesis that the predicted covariance matrix is equivalent to the actual covariance matrix (χ2(2) = 1.499, p = 0.473). Thus, this model does not appear to fit the data well. For this model, the degrees of freedom came from the difference between the number of items in the covariance matrix (10) and the number of parameters estimated by the model (8), resulting in 2 degrees of freedom.
+               
  
-                
-                
 #HCPD Assumptions testing
-                #Subset to HCP dataset
+                #Subset to HCPD dataset
                 HCPD_wide <- subset(study1_wide, dataset.1=="HCPD")
                 
                 #1. Pairwise plots
-                HCPD_SA_wide_pair <- HCPD_wide[, c("SA_LAT_ADJ.2", "SA_LAT_ADJ.5", 
-                                                       "SA_LAT_ADJ.6", "SA_LAT_ADJ.8",
-                                                       "SA_LAT_ADJ.11", "SA_LAT_ADJ.12",
-                                                       "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")]
+                HCPD_SA_wide_pair <- HCPD_wide[, c("SA_LAT_ADJ.5", 
+                                                   "SA_LAT_ADJ.6", 
+                                                   "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")]
                 # Create pairwise scatterplots
                 png("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/png_figures/Study1_HCPD_PairsPlot_230529.png", height = 1000, width = 1000)
                 pairs(HCPD_SA_wide_pair)            # Create scatterplots
@@ -4750,16 +5116,15 @@ study1_demos <- subset(study1, NewNetwork=="1")
                 
                 #3. Multicollinearity tests (VIF from package 'car')
                 library(car)
-                vif(lm(SA_LAT_ADJ.2 ~ SA_LAT_ADJ.5 + SA_LAT_ADJ.6 + SA_LAT_ADJ.8 + SA_LAT_ADJ.11 + SA_LAT_ADJ.12 + SA_LAT_ADJ.15 + SA_LAT_ADJ.17, data = HCPD_SA_wide_pair))
+                vif(lm(SA_LAT_ADJ.5 ~ SA_LAT_ADJ.6 + SA_LAT_ADJ.15 + SA_LAT_ADJ.17, data = HCPD_SA_wide_pair))
                 
                 
                 #4. Bartlett's test of sphericity (from package 'psych')    
                 #create corr matrix
                 # Select the variables you want to include in the correlation matrix
-                selected_vars <- HCPD_wide[, c("SA_LAT_ADJ.2", "SA_LAT_ADJ.5", 
-                                                 "SA_LAT_ADJ.6", "SA_LAT_ADJ.8",
-                                                 "SA_LAT_ADJ.11", "SA_LAT_ADJ.12",
-                                                 "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")]
+                selected_vars <- HCPD_wide[, c("SA_LAT_ADJ.5", 
+                                               "SA_LAT_ADJ.6", 
+                                               "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")]
                 
                 # Compute the correlation matrix
                 cor_matrix <- cor(selected_vars)
@@ -4769,79 +5134,287 @@ study1_demos <- subset(study1, NewNetwork=="1")
                 
                 
                 #5. KMO test of sampling adequacy (package 'psych')     
-                KMO(HCPD_wide[, c("SA_LAT_ADJ.2", "SA_LAT_ADJ.5", "SA_LAT_ADJ.6", "SA_LAT_ADJ.8", "SA_LAT_ADJ.11", "SA_LAT_ADJ.12", "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")])
+                KMO(HCPD_wide[, c("SA_LAT_ADJ.5", "SA_LAT_ADJ.6", "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")])
                 
-                
-                #HCP Iterated principal factor analysis ('psych' package)
-                #create corr matrix
                 # Select the variables you want to include in the correlation matrix
-                selected_vars <- HCPD_wide[, c("SA_LAT_ADJ.2", "SA_LAT_ADJ.5", 
-                                                 "SA_LAT_ADJ.6", "SA_LAT_ADJ.8",
-                                                 "SA_LAT_ADJ.11", "SA_LAT_ADJ.12",
-                                                 "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")]
+                selected_vars <- HCPD_wide[, c("SA_LAT_ADJ.5", 
+                                               "SA_LAT_ADJ.6", 
+                                               "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")]
                 
                 # Compute the correlation matrix
                 cor_matrix <- cor(selected_vars)     
+            
+         #HCPD CFA
+                #Set up model
+                cfa_model <- "
+                F1 =~ SA_LAT_ADJ.15 + SA_LAT_ADJ.17
+                F2 =~ SA_LAT_ADJ.5 + SA_LAT_ADJ.6
+                F1 ~~ 0*F2"
                 
+                #Fit model
+                library(lavaan)
+                fit_cfa <- cfa(cfa_model, data=selected_vars, estimator = "MLM", se="robust", std.lv=TRUE)
+                summary(fit_cfa, fit.measures =TRUE, standardized=TRUE)
                 
-                #Initial PFA model hypothesizing three factors. nfactors=max number of factors you would consider
-                result_pca <- fa(cor_matrix, nfactors = 4, rotate = "none")
-                print(result_pca) 
+                #Grab standardized loadings
+                inspect(fit_cfa,what="std")
                 
-                #Eigenvalues of extracted factors
-                result_pca[["values"]]
-                
-                #R-squared scores of extracted factors
-                result_pca[["R2.scores"]]
-                
-                #Factor loadings
-                result_pca[["loadings"]]
-                fa.diagram(result_rotated$loadings, main = "Factor Loadings") #visualization
-                
-                
-                #Parallel analysis  
-                parallel_model <- fa.parallel(cor_matrix, n.obs=343, fa="fa", fm="ml", nfactors=4, n.iter=100)
-                print(parallel_model)
-                
-                #Scree plot
-                png("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/png_figures/Study1_HCPD_EFAScreePlot_230529.png", height = 3.25, width = 3.25, units="in", res= 1200,)
-                plot(parallel_model,show.legend=FALSE)
-                dev.off()              # Close device and save as PNG
-                
-                #Final HCPD EFA model 
-                # Select the variables you want to include in the correlation matrix
-                selected_vars <- HCPD_wide[, c("SA_LAT_ADJ.2", "SA_LAT_ADJ.5", 
-                                                 "SA_LAT_ADJ.6", "SA_LAT_ADJ.8",
-                                                 "SA_LAT_ADJ.11", "SA_LAT_ADJ.12",
-                                                 "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")]
-                
-                # Compute the correlation matrix
-                cor_matrix <- cor(selected_vars)     
-                
-                
-                result_pca <- fa(cor_matrix, nfactors = 1, rotate = "none")
-                print(result_pca) 
-                
-                #Eigenvalues of extracted factors
-                result_pca[["values"]]
-                
-                #Multiple R-squared scores of extracted factors
-                result_pca[["R2.scores"]]
-                
-                # %variance explained
-                result_pca[["Vaccounted"]]
-                
-                #Factor loadings
-                result_pca[["loadings"]]
-                fa.diagram(result_pca$loadings, main = "Factor Loadings") #visualization
-                
-                #Parallel analysis with scree
-                parallel_model <- fa.parallel(cor_matrix, n.obs=343, fa="fa", fm="ml", nfactors=2, n.iter=100)
-                png("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/png_figures/Study1_HCPD_EFAScreePlot_230605.png", height = 3.25, width = 3.25, units="in", res= 1200,)
-                plot(parallel_model,show.legend=FALSE)
-                dev.off()              # Close device and save as PNG
-                
-                               
+                                
+#-----------------------------------------COG-LAT CORRESPONDENCE: CCA-------------------------------------------
+#Purpose: Examine a potential relationship between cognitive ability and brain network lateralization for eight specialized networks. 
+#Requires package: library(CCA)
+
+#SETUP
+      #Load study1
+      study1 <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/csv_files/study1_HCP_AI_entirety_230630.csv")
+      study1$Sex_Bin <- as.factor(study1$Sex_Bin)  
+      
+      #Drop NSD dataset
+      study1 <- subset(study1, dataset!="REST")
+      study1 <- subset(study1, dataset!="TASK")
+      
+      #Model-adjusted NSAR for 17 networks
+      study1$SA_LAT_ADJ <- NA
+      ci_df <- data.frame(dataset=factor(),
+                          NewNetwork=factor(),
+                          CI_MIN=integer(),
+                          CI_MAX=integer(),
+                          MEAN=integer())
+      
+      dataset_list <- c("HCP-DISC", "HCP-REP", "HCPD")
+      for (d in dataset_list){
+        subset1 <- subset(study1, dataset==d)
+        
+        for (i in 1:17) {
+          # Subset the data based on NewNetwork value
+          subset_data <- subset(subset1, NewNetwork == i)
+          
+          # Fit the linear regression model
+          model <- lm(SA_LAT ~ Age_Centered + Sex_Bin + FD_Centered +Handedness, data = subset_data)
+          
+          #Grab lm coefficients
+          BETA_AGE <- model[["coefficients"]][["Age_Centered"]]
+          BETA_SEX <- model[["coefficients"]][["Sex_Bin1"]]
+          BETA_FD <- model[["coefficients"]][["FD_Centered"]]
+          BETA_HAND <- model[["coefficients"]][["Handedness"]]
+          
+          #Grab means
+          MEAN_AGE <- mean(subset_data$Age_Centered)
+          MEAN_FD <- mean(subset_data$FD_Centered)
+          MEAN_SEX <- nrow(subset_data[subset_data$Sex_Bin == "0",])/nrow(subset_data) #The mean of a dichotomous variable is just the proportion which has been coded as 0 (or the reference category, which is 0 or Male). Determine ref category with: levels(subset_data$Sex_Bin)[1]
+          MEAN_HAND <- mean(subset_data$Handedness)
+          
+          #IDs of the subset
+          subsetted_ids <- subset_data$SUBJID
+          
+          #Find matching rows
+          matching_rows <- study1$SUBJID %in% subsetted_ids &
+            study1$NewNetwork %in% i
+          
+          #Example formula (Qurechi 2014): VOLadj = VOLnat - [Beta1(Agenat - MeanAge) + Beta2(Sexnat - MeanSex) + Beta3(Sitenat - MeanSitenat) + Beta4()]
+          study1$SA_LAT_ADJ[matching_rows] <- subset_data$SA_LAT - ( (BETA_AGE*(subset_data$Age_Centered - MEAN_AGE)) + (BETA_FD*(subset_data$FD_Centered - MEAN_FD)) + (BETA_SEX*(as.numeric(subset_data$Sex_Bin) - MEAN_SEX)) + (BETA_HAND*(subset_data$Handedness - MEAN_HAND)) )
+          subset_data$SA_LAT_ADJ <- subset_data$SA_LAT - ( (BETA_AGE*(subset_data$Age_Centered - MEAN_AGE)) + (BETA_FD*(subset_data$FD_Centered - MEAN_FD)) + (BETA_SEX*(as.numeric(subset_data$Sex_Bin) - MEAN_SEX)) + (BETA_HAND*(subset_data$Handedness - MEAN_HAND)) )
+          
+          #find mean
+          MEAN <- mean(subset_data$SA_LAT_ADJ)
+          
+          n <- length(subset_data$SA_LAT_ADJ)
+          std_dev <- sd(subset_data$SA_LAT_ADJ)
+          std_err <- std_dev / sqrt(n)
+          z_score=1.96
+          margin_error <- z_score * std_err
+          
+          #lower bound
+          CI_MIN <- MEAN - margin_error
+          #upper bound
+          CI_MAX <- MEAN + margin_error
+          #Append CI data to dataframe
+          row_df <- data.frame(d, i, CI_MIN, CI_MAX, MEAN)
+          names(row_df) <- c("dataset", "NewNetwork", "CI_MIN", "CI_MAX", "MEAN")
+          ci_df <- rbind(ci_df, row_df)
+        
+      }
+      }
+      
+      #Reshape dataframe LONG to WIDE
+      study1_wide <- study1 %>%
+        pivot_wider(
+          names_from = c("NewNetwork"),
+          names_prefix = "SA_LAT_ADJ.",
+          values_from = c("SA_LAT_ADJ"),
+          id_cols = c("SUBJID","sessions", "dataset","Age_Centered","FD_Centered", "Age_in_Yrs","Handedness", "FD_avg", "Sum_Volumes", "DVARS_avg", "Age_Centered", "FD_Centered", "Sex_Bin", "ReadEng_Unadj", "PicVocab_Unadj", "Flanker_Unadj", "CardSort_Unadj", "ListSort_Unadj")
+        )
+      
+      
+  # Model-adjusted COG measures
+      study1_wide$ReadEng_Unadj_ADJ <- NA
+      study1_wide$PicVocab_Unadj_ADJ <- NA
+      study1_wide$Flanker_Unadj_ADJ <- NA
+      study1_wide$CardSort_Unadj_ADJ <- NA
+      study1_wide$ListSort_Unadj_ADJ <- NA
+      
+      ci_df <- data.frame(dataset = factor(),
+                          Variable = factor(),
+                          CI_MIN = integer(),
+                          CI_MAX = integer(),
+                          MEAN = integer())
+      
+      dataset_list <- c("HCP-DISC", "HCP-REP", "HCPD")
+      variables_to_loop <- c("ReadEng_Unadj", "PicVocab_Unadj", "Flanker_Unadj", "CardSort_Unadj", "ListSort_Unadj")
+      
+      for (d in dataset_list) {
+        subset1 <- subset(study1_wide, dataset == d)
+        
+        for (variable in variables_to_loop) {
+          subset1 <- subset(subset1, paste0(variable)!="NA")
+          # Fit the linear regression model
+          model <- lm(paste0(variable, " ~ Age_Centered + Sex_Bin"), data = subset1)
+          
+          # Grab lm coefficients
+          BETA_AGE <- model[["coefficients"]][["Age_Centered"]]
+          BETA_SEX <- model[["coefficients"]][["Sex_Bin1"]]
+         
+          # Grab means
+          MEAN_AGE <- mean(subset1$Age_Centered)
+          MEAN_SEX <- nrow(subset1[subset1$Sex_Bin == "0", ]) / nrow(subset1)
+
+          # IDs of the subset
+          subsetted_ids <- subset1$SUBJID
+
+          #Example formula (Qurechi 2014): VOLadj = VOLnat - [Beta1(Agenat - MeanAge) + Beta2(Sexnat - MeanSex) + Beta3(Sitenat - MeanSitenat) + Beta4()]
+          adjusted_variable <- paste0(variable, "_ADJ")
+          
+          # Example formula for adjustment
+          subset1[[adjusted_variable]] <- subset1[[variable]] - (
+            (BETA_AGE * (subset1$Age_Centered - MEAN_AGE)) +
+              (BETA_SEX * (as.numeric(subset1$Sex_Bin) - MEAN_SEX))
+          )
+          
+          study1_wide[study1_wide$SUBJID %in% subsetted_ids, adjusted_variable] <- subset1[[variable]] - (
+            (BETA_AGE * (subset1$Age_Centered - MEAN_AGE)) +
+              (BETA_SEX * (as.numeric(subset1$Sex_Bin) - MEAN_SEX))
+          )
+          
+          # Find mean
+          MEAN <- mean(subset1[[adjusted_variable]])
+          
+          n <- length(subset1[[adjusted_variable]])
+          std_dev <- sd(subset1[[adjusted_variable]])
+          std_err <- std_dev / sqrt(n)
+          z_score <- 1.96
+          margin_error <- z_score * std_err
+          
+          # Lower bound
+          CI_MIN <- MEAN - margin_error
+          # Upper bound
+          CI_MAX <- MEAN + margin_error
+          
+          # Append CI data to dataframe
+          row_df <- data.frame(d, variable, CI_MIN, CI_MAX, MEAN)
+          names(row_df) <- c("dataset", "Variable", "CI_MIN", "CI_MAX", "MEAN")
+          ci_df <- rbind(ci_df, row_df)
+        }
+      }
+      
+      
+ 
+      
+      
+#HCP 232 Assumptions testing
+      #Subset to HCP232 dataset
+      HCP232 <- subset(study1_wide, sessions=="4")
+
+      #Drop all subjects missing COG measures: ORRT (ReadEng_Unadj), Flanker_Unadj, CardSort_Unadj, ListSort_Unadj
+      HCP232 <- HCP232[complete.cases(HCP232$ReadEng_Unadj_ADJ, HCP232$Flanker_Unadj_ADJ), ]
+      
+      #LAT DATA
+      HCP232_SA_wide_pair <- HCP232[, c("SA_LAT_ADJ.2", "SA_LAT_ADJ.5", 
+                                               "SA_LAT_ADJ.6", "SA_LAT_ADJ.8",
+                                               "SA_LAT_ADJ.11", "SA_LAT_ADJ.12",
+                                               "SA_LAT_ADJ.15", "SA_LAT_ADJ.17")]
+      #COG/BEH DATA
+      HCP232_COG_wide_pair <- HCP232[, c("ReadEng_Unadj_ADJ", "Flanker_Unadj_ADJ")]
+      
+      #BOTH COG + LAT
+      HCP232_ALL_wide_pair <- HCP232[, c("SA_LAT_ADJ.2", "SA_LAT_ADJ.5", 
+                                                "SA_LAT_ADJ.6", "SA_LAT_ADJ.8",
+                                                "SA_LAT_ADJ.11", "SA_LAT_ADJ.12",
+                                                "SA_LAT_ADJ.15", "SA_LAT_ADJ.17",
+                                                "ReadEng_Unadj_ADJ", "Flanker_Unadj_ADJ")]
+      
+      #1. Multivariate tests for normality: Doornik-Hansen      
+      library(mvnTest)
+      png("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/png_figures/Study1_HCP232_DHTestQQPlot_231027.png", height = 3.25, width = 3.25, units="in", res= 1200,)
+      DH.test(HCP232_ALL_wide_pair, qqplot = TRUE)
+      dev.off()              # Close device and save as PNG
+      
+      #2. Pairwise plots
+      png("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/png_figures/Study1_HCP232_PairsPlot_ALL_231027.png", height = 1000, width = 1000)
+      pairs(HCP232_ALL_wide_pair)            # Create scatterplots
+      dev.off()              # Close device and save as PNG
+      
+      #3. Use 'matcor' from CCA package: correlations between and within matrices
+      matcor(HCP232_SA_wide_pair, HCP232_COG_wide_pair)
+      
+
+#HCP232 CCA
+      #Implement CCA using "cc" function from CCA package (allows computations of loadings+visualizations)
+      HCP232_CCA <- cc(HCP232_SA_wide_pair,HCP232_COG_wide_pair)
+      HCP232_CCA$cor #correlations between canonical variates       
+      
+      #Compute canonical loadings
+      HCP232_CCA2 <- comput(HCP232_SA_wide_pair, HCP232_COG_wide_pair, HCP232_CCA)  
+      
+      # display canonical loadings -> tells you which variables load strongest onto the canonical variates
+      HCP232_CCA2[3:6]  
+      
+      #Test number of canonical dimensions (package: CCP)
+      #Setup variables
+      rho <- HCP232_CCA$cor
+      n <- dim(HCP232_SA_wide_pair)[1]
+      p <- length(HCP232_SA_wide_pair)
+      q <- length(HCP232_COG_wide_pair)
+      
+      #Calculate p-values using the F-approximations of different test statistics: (package: CCP)
+      #Answers question: Which canonical variates are statistically sig? (more than one? just one? etc.)
+      p.asym(rho, n, p, q, tstat = "Wilks")
+      
+      p.asym(rho, n, p, q, tstat = "Hotelling")
+      
+      p.asym(rho, n, p, q, tstat = "Pillai")
+      
+      p.asym(rho, n, p, q, tstat = "Roy")
+      
+      #Standardized NSAR canonical coefficients diagonal matrix of NSAR sd's
+      s1 <- diag(sqrt(diag(cov(HCP232_SA_wide_pair))))
+      s1 %*% HCP232_CCA$xcoef
+      
+      #Standardized COG canonical coefficients diagonal matrix of COG sd's
+      s2 <- diag(sqrt(diag(cov(HCP232_COG_wide_pair))))
+      s2 %*% HCP232_CCA$ycoef   
+      
+      #Correlate raw scores with canonical variates (purpose: to check which network and which cognitive variable are loading most significantly)
+       #Apply Haufe transformation first: https://www.sciencedirect.com/science/article/pii/S1053811913010914
+          #LAT
+          Cov_A <- cov(HCP232_SA_wide_pair) #grab covariance matrix
+          W_transformed_A <- Cov_A %*% HCP232_CCA$xcoef
+          #COG 
+          Cov_B <- cov(HCP232_COG_wide_pair) #grab covariance matrix
+          W_transformed_B <- Cov_B %*% HCP232_CCA$ycoef
+        
+       #LAT and COG variates
+          cor_COGvariates <- cor(HCP232_SA_wide_pair, HCP232_CCA[["scores"]][["yscores"]])
+          print(cor_COGvariates)
+          
+        #COG and LAT variates
+          cor_LATvariates <- cor(HCP232_COG_wide_pair, HCP232_CCA[["scores"]][["xscores"]])
+          print(cor_LATvariates)
+
+        #Threshold for significance
+          r_value <- 1.96/(sqrt(dim(HCP232_SA_wide_pair)[1] -3))
+          print(r_value)
+      
+      
 #------------------------------------------HCPD DEV CHANGES-------------------------------------------
 #Purpose: Demonstrate lack of developmental changes in specialization for the HCPD dataset, with accompanying supplementary figure
                 
@@ -5125,7 +5698,7 @@ study1_demos <- subset(study1, NewNetwork=="1")
             #ii.	Chi-square:
             #  iii.	The null hypothesis of the Chi-square test of model fit is that the predicted covariance matrix is equivalent to the actual covariance matrix. Using the goodness-of-fit command in Stata 16.1, we rejected the null hypothesis that the predicted covariance matrix is equivalent to the actual covariance matrix (χ2(2) = 1.499, p = 0.473). Thus, this model does not appear to fit the data well. For this model, the degrees of freedom came from the difference between the number of items in the covariance matrix (10) and the number of parameters estimated by the model (8), resulting in 2 degrees of freedom.
             
- #--------------------------------WRITE OUT DATASET---------------------------
+#--------------------------------WRITE OUT DATASET---------------------------
 #Load ALL HCP data (4 sessions)
             HCP_DEMOS <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Data/supercomputer_backup/HCP_analysis/behavioral_data/HCP_Unrestricted_Behavioral_230201.csv")       
             HCP_R_DEMOS <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Data/supercomputer_backup/HCP_analysis/behavioral_data/RESTRICTED_mpeterson_5_15_2023_13_22_55.csv")
@@ -5155,7 +5728,12 @@ study1_demos <- subset(study1, NewNetwork=="1")
             HCP_df$Sex_Bin <- as.factor(ifelse(HCP_df$Gender == "F", 1, ifelse(HCP_df$Gender == "M", 0, NA)))
             
             #Just include relevant columns
-            HCP_df <- HCP_df[,c("SUBJID", "Age_in_Yrs", "FD_avg", "Sum_Volumes", "Percent_Vols", "DVARS_avg", "Sex_Bin", "Handedness")]
+            HCP_df <- HCP_df[,c("SUBJID", "Age_in_Yrs", "FD_avg", "Sum_Volumes", "Percent_Vols", "DVARS_avg", "Sex_Bin", "Handedness", "ReadEng_Unadj", "PicVocab_Unadj", "Flanker_Unadj", "CardSort_Unadj", "ListSort_Unadj")]
+              #ORRT: ReadEng_Unadj. Language
+              #PVT: PicVocab_Unadj. Language.
+              #FLANKER: Flanker_Unadj. Attention/Executive function.
+              #CCST: CardSort_Unadj. Executive function.
+              #LSWMT: ListSort_Unadj. Working memory.
             
             #Create sessions marker
             HCP_df$sessions <- "4"
@@ -5211,9 +5789,13 @@ study1_demos <- subset(study1, NewNetwork=="1")
             HCPR_df$Sex_Bin <- as.factor(ifelse(HCPR_df$Gender == "F", 1, ifelse(HCPR_df$Gender == "M", 0, NA)))
             
             #Just include relevant variables
-            HCPR_df <- HCPR_df[,c("SUBJID", "Age_in_Yrs", "FD_avg", "Sum_Volumes", "Percent_Vols", "DVARS_avg", "Sex_Bin", "Handedness")]
-            
-            #Create sessions marker
+            HCPR_df <- HCPR_df[,c("SUBJID", "Age_in_Yrs", "FD_avg", "Sum_Volumes", "Percent_Vols", "DVARS_avg", "Sex_Bin", "Handedness", "ReadEng_Unadj", "PicVocab_Unadj", "Flanker_Unadj", "CardSort_Unadj", "ListSort_Unadj")]
+                  #ORRT: ReadEng_Unadj. Language
+                  #PVT: PicVocab_Unadj. Language.
+                  #FLANKER: Flanker_Unadj. Attention/Executive function.
+                  #CCST: CardSort_Unadj. Executive function.
+                  #LSWMT: ListSort_Unadj. Working memory.            
+                  #Create sessions marker
             HCPR_df$sessions <- "1-3"
             
             #Organize covariates
@@ -5238,7 +5820,7 @@ study1_demos <- subset(study1, NewNetwork=="1")
             
           #JOIN all HCP    
             #Merge HCP and HCPR dataframes
-            HCP_ALL <- merge(HCPR_AI, HCP_SA_ALL, by=c("SUBJID", "FD_avg","DVARS_avg", "Percent_Vols", "Sum_Volumes", "Handedness", "Sex_Bin", "Age_in_Yrs", "sessions", "Network", "NewNetwork","NETWORK", "LH_SA", "RH_SA", "Age_Centered", "FD_Centered"), all=TRUE)
+            HCP_ALL <- merge(HCPR_AI, HCP_SA_ALL, by=c("SUBJID", "FD_avg","DVARS_avg", "Percent_Vols", "Sum_Volumes", "Handedness", "Sex_Bin", "Age_in_Yrs", "sessions", "Network", "NewNetwork","NETWORK", "LH_SA", "RH_SA", "Age_Centered", "FD_Centered", "ReadEng_Unadj", "PicVocab_Unadj", "Flanker_Unadj", "CardSort_Unadj", "ListSort_Unadj"), all=TRUE)
             
             #Create SA_LAT
             HCP_ALL$SA_LAT <- (HCP_ALL$RH_SA - HCP_ALL$LH_SA) / (HCP_ALL$LH_SA + HCP_ALL$RH_SA)
@@ -5299,15 +5881,41 @@ study1_demos <- subset(study1, NewNetwork=="1")
             #Load data descriptor (Box)
             HCPD_data <- read_excel("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Data/HCP-D/Participants/HCD_LS_2.0_subject_completeness.xlsx")
             #Load IDs of 583 participants with REST fMRI data post-preproc
-            PARC_IDS <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Analysis/Study3_Dissertation/HCPD_analysis/Kong2019_parc_fs6/subjids/REST_ids.txt")
+            PARC_IDS <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Analysis/Study3_Dissertation/HCPD_analysis/Kong2019_parc_fs6/subjids/REST_ids_231025.txt")
             DVARS <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Analysis/Study3_Dissertation/HCPD_analysis/Kong2019_parc_fs6/motion_metrics/DVARS_avg_HCPD_ALL_230517.csv")
             FD <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Analysis/Study3_Dissertation/HCPD_analysis/Kong2019_parc_fs6/motion_metrics/FD_avg_HCPD_ALL_230517.csv")
             VOLS <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Analysis/Study3_Dissertation/HCPD_analysis/Kong2019_parc_fs6/motion_metrics/RemainingVols_HCPD_230517.csv")
             #EHI
             EHI <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Data/HCP-D/Participants/HCD_EHI_230616.csv")
             EHI <- EHI[,c("subjectkey", "hcp_handedness_score")]
+            #ORRT: ReadEng_Unadj. Language
+            ORRT <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Data/HCP-D/Participants/HCD_ORRT_231025.csv")
+            ORRT <- ORRT[,c("subjectkey", "tbx_reading_score")]
+            names(ORRT)[2] <- "ReadEng_Unadj"
+            #PVT: PicVocab_Unadj. Language.
+            PVT <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Data/HCP-D/Participants/HCD_TPVT_231025.csv")
+            PVT <- PVT[,c("subjectkey", "tpvt_uss")]
+            names(PVT)[2] <- "PicVocab_Unadj"
+            #FLANKER: Flanker_Unadj. Attention/Executive function.
+            FLANK <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Data/HCP-D/Participants/HCD_FLANKER_231025.csv")
+            FLANK <- FLANK[,c("subjectkey", "nih_flanker_unadjusted")] #scaled score, but not age-adjusted
+            names(FLANK)[2] <- "Flanker_Unadj"
+            #CCST: CardSort_Unadj. Executive function.
+            CCST <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Data/HCP-D/Participants/HCD_DCCS_231025.csv")
+            CCST <- CCST[,c("subjectkey", "nih_dccs_unadjusted")]
+            names(CCST)[2] <- "CardSort_Unadj"
+            #LSWMT: ListSort_Unadj. Working memory.            
+            LSWMT <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Data/HCP-D/Participants/HCD_LSWMT_231025.csv")
+            LSWMT <- LSWMT[,c("subjectkey", "uss")]
+            names(LSWMT)[2] <- "ListSort_Unadj"
+            
             #merge with HCPD Data
-            HCPD_data <- merge(HCPD_data, EHI, by="subjectkey")
+            HCPD_data <- merge(HCPD_data, EHI, by="subjectkey", all=TRUE)
+            HCPD_data <- merge(HCPD_data, ORRT, by="subjectkey", all=TRUE)
+            HCPD_data <- merge(HCPD_data, PVT, by="subjectkey", all=TRUE)
+            HCPD_data <- merge(HCPD_data, FLANK, by="subjectkey", all=TRUE)
+            HCPD_data <- merge(HCPD_data, CCST, by="subjectkey", all=TRUE)
+            HCPD_data <- merge(HCPD_data, LSWMT, by="subjectkey", all=TRUE)
             
             #Clean up motion_metrics
             names(DVARS)[1] <- "SUBJID"
@@ -5319,7 +5927,7 @@ study1_demos <- subset(study1, NewNetwork=="1")
             VOLS$SUBJID <- gsub("^.{0,4}", "", VOLS$SUBJID) #remove "sub-" string
             
             #Clean up demos dataset
-            HCPD_data <- HCPD_data[,c("src_subject_id", "sex", "interview_age", "Full_MR_Compl", "hcp_handedness_score")]
+            HCPD_data <- HCPD_data[,c("src_subject_id", "sex", "interview_age", "Full_MR_Compl", "hcp_handedness_score", "ReadEng_Unadj", "PicVocab_Unadj", "CardSort_Unadj", "ListSort_Unadj", "Flanker_Unadj")]
             HCPD_data <- subset(HCPD_data, src_subject_id!="HCA or HCD subject id")
             names(HCPD_data)[1] <- "SUBJID"
             
@@ -5351,11 +5959,8 @@ study1_demos <- subset(study1, NewNetwork=="1")
             #4. Participants missing handedness
             HCPD_data <- subset(HCPD_data, Handedness!="NA")
             
-            #dataset indicator
-            HCPD_data$dataset <- "HCPD"
-            
             #subset to relevant variables
-            HCPD_data <- HCPD_data[,c("SUBJID", "dataset", "Age_in_Yrs", "FD_avg", "Sum_Volumes", "Percent_Vols", "DVARS_avg", "sex", "Handedness")]
+            HCPD_data <- HCPD_data[,c("SUBJID", "dataset", "Age_in_Yrs", "FD_avg", "Sum_Volumes", "Percent_Vols", "DVARS_avg", "sex", "Handedness", "ReadEng_Unadj", "PicVocab_Unadj", "Flanker_Unadj", "CardSort_Unadj", "ListSort_Unadj")]
             
             #Load specialization data (SAI/NSAR)
             HCPD_SAI <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Analysis/Study3_Dissertation/HCPD_analysis/network_sa/REST/NETWORK_SA_SUB_NET_LH_RH_230214.csv")
@@ -5454,12 +6059,17 @@ study1_demos <- subset(study1, NewNetwork=="1")
             NSD_df2$Sex_Bin <- NA
             NSD_df2$NETWORK <- NA
             NSD_df2$Network <- NA
+            NSD_df2$ReadEng_Unadj <- NA
+            NSD_df2$PicVocab_Unadj <- NA
+            NSD_df2$Flanker_Unadj <- NA
+            NSD_df2$CardSort_Unadj <- NA
+            NSD_df2$ListSort_Unadj <- NA
             
             
             
 #Merge all datasets
-  study1 <- merge(HCP_ALL, HCPD_AI, by=c("SUBJID", "dataset", "Age_in_Yrs", "FD_avg", "Sum_Volumes", "Percent_Vols", "DVARS_avg", "Handedness","Sex_Bin", "SA_LAT", "NewNetwork", "RH_SA", "LH_SA", "Age_Centered", "FD_Centered", "Sex_Bin", "Network", "NETWORK"), all=TRUE)
-  study1 <- merge(study1, NSD_df2, by=c("SUBJID", "dataset", "Age_in_Yrs", "FD_avg", "Sum_Volumes", "Percent_Vols", "DVARS_avg", "Handedness","Sex_Bin", "SA_LAT", "NewNetwork", "RH_SA", "LH_SA", "Age_Centered", "FD_Centered", "Sex_Bin", "Network", "NETWORK"), all=TRUE)
+  study1 <- merge(HCP_ALL, HCPD_AI, by=c("SUBJID", "dataset", "Age_in_Yrs", "FD_avg", "Sum_Volumes", "Percent_Vols", "DVARS_avg", "Handedness","Sex_Bin", "SA_LAT", "NewNetwork", "RH_SA", "LH_SA", "Age_Centered", "FD_Centered", "Sex_Bin", "Network", "NETWORK", "ReadEng_Unadj", "PicVocab_Unadj", "Flanker_Unadj", "CardSort_Unadj", "ListSort_Unadj"), all=TRUE)
+  study1 <- merge(study1, NSD_df2, by=c("SUBJID", "dataset", "Age_in_Yrs", "FD_avg", "Sum_Volumes", "Percent_Vols", "DVARS_avg", "Handedness","Sex_Bin", "SA_LAT", "NewNetwork", "RH_SA", "LH_SA", "Age_Centered", "FD_Centered", "Sex_Bin", "Network", "NETWORK", "ReadEng_Unadj", "PicVocab_Unadj", "Flanker_Unadj", "CardSort_Unadj", "ListSort_Unadj"), all=TRUE)
             
             
 #For replication and transparency purposes, write out entire datset used for stats
