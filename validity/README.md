@@ -5,4 +5,5 @@ While NSAR is similar to several asymmetry indices previously implemented (Binde
 
 ## Contents
 1. Convergent Validity: Comparison of NSAR against a different measure of specialization, the autonomy index
-2. Ecological Validity: Comparison of HCP language network boundaries against a language atlas (LanA)
+2. Ecological Validity: Comparison of HCP language network boundaries against a language atlas (LanA). This analysis was cut from the preprint.
+3. New Ecological Validity: Comparison of HCP language task laterality against language network NSAR. 
