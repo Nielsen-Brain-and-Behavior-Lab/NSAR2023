@@ -1,6 +1,8 @@
-# Ecological Validity Analysis (HCP dataset)
+# Old Ecological Validity Analysis (HCP dataset)
 
 ## Description
+
+This analysis appeared in an earlier draft of the manuscript and is not found in the preprint. Instead, we opted to include a stronger form of ecological validity: comparing Language network laterality against language task activation laterality.
 
 For this analysis, we compared the LanA language atlas against the language network from the HCP (N=232) group parcellation. The LanA atlas can be downloaded from http://evlabwebapps.mit.edu:8763/#/download
 
