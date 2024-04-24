@@ -25,6 +25,10 @@ library(gghalves) #raincloud plots
 #library(lavaan) #CFA
 library(CCA) #Canonical correlation analysis
 library(CCP) #Canonical correlation analysis dimensions
+
+#Find version numbers of packages
+  sessionInfo()
+  packageVersion("psych")
 #-----------------------------------ALL DEMOS---------------------------------
 #Load ALL .csv
 study1 <- read.csv("C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/csv_files/study1_HCP_AI_entirety_230630.csv")
@@ -1136,12 +1140,17 @@ study1_demos <- subset(study1, NewNetwork=="1")
 #Stat: Spearman rank correlation
     cor.test(LANG$TLAT, LANG$SA_LAT, method = 'spearman')
     
+#Stat: Pearson (product-moment) correlation
+    cor.test(LANG$TLAT, LANG$SA_LAT, method = 'pearson')
+    
 #Plot: Lang task laterality x NSAR for language network (5)
     #With Spearman coefficient
-    ggplot(LANG, aes(x=TLAT, y=SA_LAT))+
-      labs(x = "Language Task Laterality", y = 'Language NSAR')+
+    ggplot(LANG, aes(x=SA_LAT, y=TLAT))+
+      labs(x = "Language NSAR", y = 'Language Task Laterality')+
       labs(fill = " ")+
       labs(color = " ")+
+      geom_hline(yintercept = 0, linetype="dotted", color="darkgray") +
+      geom_vline(xintercept = 0, linetype="dotted", color="darkgray") +
       geom_point(fill="#E69F00", pch=21)+
       geom_smooth(color="black", method = "lm", size=.75, se = FALSE)+ 
       #stat_cor(method="spearman")+
@@ -1154,11 +1163,47 @@ study1_demos <- subset(study1, NewNetwork=="1")
             legend.background = element_rect(fill="white", size=0.5) , axis.line = element_line(colour = "black", size = 1, linetype = "solid"), 
             axis.ticks = element_line(colour = "black", size =1, linetype ="solid"), panel.border = element_blank(), panel.background = element_blank())
     ggsave(filename = paste("Study1_HCP_LangLat_LanAMask_Tstat_NSAR_231002.svg"), width = 3.35, height = 3.35,
-           path = "C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/svg_figures/", dpi = 300)
+           path = "C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/png_figures/", dpi = 300)
     
+
+#Residuals plot:
+#    lat_model <- lm(TLAT~SA_LAT, data=LANG)
+#    
+#    ggplot(lat_model, aes(x = .fitted, y = .resid)) +
+#      geom_point() +
+#      geom_hline(yintercept = 0) +
+#      labs(x = "Fitted Values",y = "Residuals")+
+#      geom_point(fill="gray", pch=21)+
+#      theme_bw()+
+#      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+#      theme(axis.title = element_text(colour = "black", size=11), axis.text.y =element_text(colour = "black", angle = 90, hjust = 0.6, size=10), 
+#            axis.text.x =element_text(colour = "black", size=10), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+#            legend.position = "none", legend.title=element_text(colour = "black", size = 12), legend.text=element_text(colour = "black", size = 12), 
+#            legend.background = element_rect(fill="white", size=0.5) , axis.line = element_line(colour = "black", size = 1, linetype = "solid"), 
+#            axis.ticks = element_line(colour = "black", size =1, linetype ="solid"), panel.border = element_blank(), panel.background = element_blank())
+#    ggsave(filename = paste("Study1_HCP_LangLat_LanAMask_RESIDUALS_240410.png"), width = 3.35, height = 3.35,
+#           path = "C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/png_figures/", dpi = 300)
     
-    
-        
+
+  
+# Create a QQ plot of the residuals using ggplot2
+  #Simple linear model  
+  lat_model <- lm(TLAT~SA_LAT, data=LANG)
+  residuals <- resid(lat_model) #grab residuals
+  #QQ Plot
+  ggplot(data = data.frame(residuals = residuals), aes(sample = residuals)) +
+    stat_qq() +
+    stat_qq_line(col = "red", size = 0.5) +
+    xlim(-2.9, 2.9) +  # Adjust x-axis limits
+    labs(title = "", x = "Theoretical Quantiles", y = "Sample Quantiles")+
+  theme(axis.title = element_text(colour = "black", size=11), axis.text.y =element_text(colour = "black", angle = 90, hjust = 0.6, size=10), 
+        axis.text.x =element_text(colour = "black", size=10), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        legend.position = "none", legend.title=element_text(colour = "black", size = 12), legend.text=element_text(colour = "black", size = 12), 
+        legend.background = element_rect(fill="white", size=0.5) , axis.line = element_line(colour = "black", size = 1, linetype = "solid"), 
+        axis.ticks = element_line(colour = "black", size =1, linetype ="solid"), panel.border = element_blank(), panel.background = element_blank())
+  ggsave(filename = paste("Study1_HCP_LangLat_LanAMask_QQPLOT_RESIDUALS_240411.png"), width = 3.35, height = 3.35,
+                    path = "C:/Users/maddy/Box/Autism_Hemispheric_Specialization/Figures/study1_figures/png_figures/", dpi = 300)
+         
 #---------------------------------HCP STABLE EST.: OVERALL PARC------------------------------------------
 #SETUP
     #Load files: 1_dice
@@ -3183,7 +3228,7 @@ study1_demos <- subset(study1, NewNetwork=="1")
       dataset_order <- c("HCPD", "HCP-REP", "HCP-DISC")
       ci_df$dataset <- factor(ci_df$dataset, level=dataset_order)
       ggplot(ci_df, aes(x = MEAN, y = NewNetwork, group=interaction(dataset, NewNetwork), fill=dataset)) +
-        geom_hline(yintercept = seq(from=.5, to=17.5, by = 1), linetype="dotted", color="darkgray") +
+        geom_hline(yintercept = seq(from=1.5, to=17.5, by = 1), linetype="dotted", color="darkgray") +
         geom_errorbarh(aes(xmin=PERC2.5, xmax = PERC97.5), height = 0,  position = position_dodge(width = .5), color="black", size=.5) +
         geom_point(position = position_dodge(width = .5), size=2, shape=21) +
         coord_cartesian(ylim= c(1.2, NA), clip = "off") +
@@ -3945,13 +3990,14 @@ study1_demos <- subset(study1, NewNetwork=="1")
                   cor_data$Correlation <- ifelse(cor_data$Correlation==1, NA, cor_data$Correlation)
                 
                 #Visualize the NSAR matrix using ggplot heatmap 
-                color_breaks <- seq(-.6, .6, by = 0.2)
+                color_breaks <- seq(-.5, .5, by = 0.2)
                 # Create the ggplot heatmap with reordered axis labels
                 ggplot(cor_data, aes(x = as.factor(Variable1), y = as.factor(Variable2), fill = Correlation)) +
                   geom_tile(color = "white",
                             lwd = 1,
                             linetype = 1) +
-                  scale_fill_gradient(low = "#E69F00", high = "white", na.value="white", breaks=color_breaks, labels=round(color_breaks,2), limits=c(-.6, round(max_value_excluding_1,2))) +
+                  #scale_fill_gradient(low = "#63B8FF", high = "#FFC125", mid = "white", midpoint = 0, na.value="#FFC125", breaks=color_breaks, labels=round(color_breaks,2), limits=c(-1, 1)) +
+                  scale_fill_gradientn(colors = c("#63B8FF", "white", "#FFC125"), na.value = "white", breaks = color_breaks, labels = round(color_breaks, 2), limits = c(-.5, .5)) +
                   geom_text(aes(Variable1, Variable2, label = ifelse(abs(round(Correlation,2)) < r_value & Triangle!="LowerTriangle", "", round(Correlation, 2))), color = "black", size = 1.75) +
                   geom_text(aes(label = ifelse(is.na(Correlation), "1", "")), color = "black", size = 1.75) +
                   #scale_x_discrete(labels=c("VIS-B","LANG", "DAN-A","SAL-A", "CTRL-B", "CTRL-C", "DEF-C", "LIM-B")) +
@@ -4026,13 +4072,14 @@ study1_demos <- subset(study1, NewNetwork=="1")
                 
                 
                 #Visualize the NSAR matrix using ggplot heatmap 
-                color_breaks <- seq(-.6, .4, by = 0.2)
+                color_breaks <- seq(-.5, .5, by = 0.2)
                 # Create the ggplot heatmap with reordered axis labels
                 ggplot(cor_data, aes(x = as.factor(Variable1), y = as.factor(Variable2), fill = Correlation)) +
                   geom_tile(color = "white",
                             lwd = 1,
                             linetype = 1) +
-                  scale_fill_gradient(low = "#D55E00", high = "white", na.value="white", breaks=color_breaks, labels=round(color_breaks,2), limits=c(-.6, round(max_value_excluding_1,2))) +
+                  #scale_fill_gradient(low = "#D55E00", high = "white", na.value="white", breaks=color_breaks, labels=round(color_breaks,2), limits=c(-.6, round(max_value_excluding_1,2))) +
+                  scale_fill_gradientn(colors = c("#63B8FF", "white", "#FFC125"), na.value = "white", breaks = color_breaks, labels = round(color_breaks, 2), limits = c(-.5, .5)) +
                   geom_text(aes(Variable1, Variable2, label = ifelse(abs(round(Correlation,2)) < r_value & Triangle!="LowerTriangle", "", round(Correlation, 2))), color = "black", size = 1.75) +
                   geom_text(aes(label = ifelse(is.na(Correlation), "1", "")), color = "black", size = 1.75) +
                   scale_x_discrete(labels=c("LIM-B", "CTRL-C", "VIS-B", "SAL-A", "CTRL-B", "LANG", "DEF-C", "DAN-A")) +
@@ -4107,14 +4154,15 @@ study1_demos <- subset(study1, NewNetwork=="1")
                 cor_data$Correlation <- ifelse(cor_data$Correlation==1, NA, cor_data$Correlation)
                 
                 #Visualize the NSAR matrix using ggplot heatmap 
-                color_breaks <- seq(-.6, .4, by = 0.2)
+                color_breaks <- seq(-.5, .5, by = 0.2)
                 
                 # Create the ggplot heatmap with reordered axis labels
                 ggplot(cor_data, aes(x = as.factor(Variable1), y = as.factor(Variable2), fill = Correlation)) +
                   geom_tile(color = "white",
                             lwd = 1,
                             linetype = 1) +
-                  scale_fill_gradient(low = "#0072B2", high = "white", na.value="white", breaks=color_breaks, labels=round(color_breaks,2), limits=c(-.6, round(max_value_excluding_1,2))) +
+                  #scale_fill_gradient(low = "#0072B2", high = "white", na.value="white", breaks=color_breaks, labels=round(color_breaks,2), limits=c(-.6, round(max_value_excluding_1,2))) +
+                  scale_fill_gradientn(colors = c("#63B8FF", "white", "#FFC125"), na.value = "white", breaks = color_breaks, labels = round(color_breaks, 2), limits = c(-.5, .5)) +
                   geom_text(aes(Variable1, Variable2, label = ifelse(abs(round(Correlation,2)) < r_value & Triangle!="LowerTriangle", "", round(Correlation, 2))), color = "black", size = 1.75) +
                   geom_text(aes(label = ifelse(is.na(Correlation), "1", "")), color = "black", size = 1.75) +
                   scale_x_discrete(labels=c("LIM-B", "CTRL-C", "VIS-B", "SAL-A", "CTRL-B", "LANG", "DEF-C", "DAN-A")) +
