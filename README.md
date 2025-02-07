@@ -22,4 +22,4 @@ README files can be found in each folder, so please see those for additional det
 Step-by-step walkthroughs are avaialble for the preprocessing and MS-HBM parcellation steps on [NeuroDocs](https://neurodocs.readthedocs.io/en/latest/).
 
 ## Contact
-For questions concerning script usage, please contact us through our lab webpage: https://brain.byu.edu/contact. Any questions regarding the usage of software/pipelines developed by other labs (e.g., fMRIprep) should be directed to their respective forums. Best of luck!
+For questions concerning script usage, please contact us through our lab webpage: https://brain.byu.edu/contact. Any questions regarding the usage of software/pipelines developed by other labs (e.g., MS-HBM) should be directed to their respective forums. Best of luck!
