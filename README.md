@@ -4,8 +4,8 @@
 The aim of this study was to estimate network lateralization using a network surface area-based approach (NSAR). After examining the validity and reliability of individual network parcellations and this surface area-based measure of lateralization, we addressed two hypotheses. First, we hypothesized that networks associated with language, visuospatial attention, and executive control would show the greatest lateralization. Second, we hypothesized that network lateralization would exhibit a dependent relationship between lateralized networks across individuals.
 
 ## Associated Publications 
-*Imaging Neuroscience* Publication: https://doi.org/10.1162/imag_a_00437
-Preprint: https://doi.org/10.1101/2023.12.08.570817
+* *Imaging Neuroscience* Publication: https://doi.org/10.1162/imag_a_00437
+* Preprint: https://doi.org/10.1101/2023.12.08.570817
 
 ## Getting Started 
 Scripts are organized in the following folders: preproc, ind_parc, network_sa, validity, reliability, and stats.
